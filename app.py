@@ -384,7 +384,7 @@ def analyze_page(url: str, cfg: dict) -> dict:
 # ═══════════════════════════════════════════════════════════════
 
 st.set_page_config(
-    page_title="🚀 SEO Suite Pro",
+    page_title="🚀 SEO Suite Pro — Ismail El Asiouty",
     page_icon="🚀",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -417,9 +417,60 @@ html, body, [class*="css"] {
 /* Section headers */
 .section-header {
     display:flex; align-items:center; gap:10px;
-    background:linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    color:white; padding:12px 20px; border-radius:12px;
+    background:linear-gradient(135deg, #1a1100 0%, #3d2b00 50%, #1a1100 100%);
+    color:#FFD700; padding:12px 20px; border-radius:12px;
     margin:20px 0 14px; font-size:16px; font-weight:700; letter-spacing:.5px;
+    border: 1px solid #FFD700;
+}
+
+/* Brand card */
+.brand-card {
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a00 50%, #0a0a0a 100%);
+    border: 2px solid #FFD700;
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 20px;
+    color: white;
+    text-align: center;
+    box-shadow: 0 0 30px rgba(255,215,0,0.15);
+}
+.brand-name {
+    font-size: 28px;
+    font-weight: 900;
+    color: #FFD700;
+    margin-bottom: 6px;
+    text-shadow: 0 0 20px rgba(255,215,0,0.4);
+}
+.brand-title {
+    font-size: 14px;
+    color: #ccb84a;
+    margin-bottom: 16px;
+    line-height: 1.6;
+}
+.brand-links {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+.brand-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,215,0,0.12);
+    border: 1px solid #FFD700;
+    color: #FFD700 !important;
+    padding: 8px 18px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all .2s;
+}
+.brand-link:hover {
+    background: #FFD700;
+    color: #000 !important;
 }
 
 /* Status badges */
@@ -453,14 +504,14 @@ html, body, [class*="css"] {
 [data-testid="stDataFrameResizable"] { border-radius:10px; }
 
 /* Sidebar */
-section[data-testid="stSidebar"] { background:#1a1a2e; }
+section[data-testid="stSidebar"] { background: linear-gradient(180deg, #0a0a0a 0%, #1a1100 100%); }
 section[data-testid="stSidebar"] .block-container { padding-top:1rem; }
 section[data-testid="stSidebar"] * { color: #e0e0e0 !important; }
 section[data-testid="stSidebar"] h1,
 section[data-testid="stSidebar"] h2,
-section[data-testid="stSidebar"] h3 { color: white !important; }
+section[data-testid="stSidebar"] h3 { color: #FFD700 !important; }
 section[data-testid="stSidebar"] .stSlider label { color:#b0b0b0 !important; }
-section[data-testid="stSidebar"] hr { border-color:#333 !important; }
+section[data-testid="stSidebar"] hr { border-color:#3d2b00 !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -536,12 +587,65 @@ def style_status_df(df: pd.DataFrame, status_col: str) -> pd.DataFrame.style:
     return df.style.apply(row_color, axis=1)
 
 
+def download_buttons(df: pd.DataFrame, filename: str, label: str = "📥 تحميل النتائج") -> None:
+    """Render CSV download + Google Sheets import button for a dataframe."""
+    if df is None or df.empty:
+        return
+    st.markdown(f"""
+    <div style="background:linear-gradient(135deg,#0a0a0a,#1a1100);
+                border:1px solid #FFD700; border-radius:12px;
+                padding:14px 20px; margin:14px 0;">
+        <div style="color:#FFD700; font-size:13px; font-weight:700; margin-bottom:10px;">
+            📥 تحميل / Export — {label}
+        </div>
+    </div>""",
+        unsafe_allow_html=True
+    )
+
+    col_csv, col_sheets, col_info = st.columns([1, 1, 2])
+
+    # CSV download
+    csv_bytes = df.to_csv(index=False, encoding="utf-8-sig").encode("utf-8-sig")
+    with col_csv:
+        st.download_button(
+            label="⬇️ تحميل CSV",
+            data=csv_bytes,
+            file_name=f"{filename}.csv",
+            mime="text/csv",
+            use_container_width=True,
+        )
+
+    # Google Sheets via CSV import link
+    import urllib.parse
+    with col_sheets:
+        st.markdown(
+            f'<a href="https://docs.google.com/spreadsheets/d/new" target="_blank">'
+            f'<button style="width:100%;background:#0f9d58;color:white;border:none;'
+            f'border-radius:6px;padding:8px 12px;font-size:14px;cursor:pointer;font-weight:600;">'
+            f'📊 فتح Google Sheets</button></a>',
+            unsafe_allow_html=True
+        )
+
+    with col_info:
+        st.caption("💡 للـ Google Sheets: حمّل الـ CSV أولاً ثم استورده من File → Import")
+
+
 # ═══════════════════════════════════════════════════════════════
 #  🗂️ SIDEBAR
 # ═══════════════════════════════════════════════════════════════
 
 with st.sidebar:
-    st.markdown("## 🚀 SEO Suite Pro")
+    st.markdown("""
+    <div style="text-align:center; padding:10px 0 5px">
+        <div style="font-size:22px; font-weight:900; color:#FFD700; text-shadow:0 0 10px rgba(255,215,0,0.4)">
+            🚀 SEO Suite Pro
+        </div>
+        <div style="font-size:11px; color:#ccb84a; margin-top:4px">
+            by <strong style="color:#FFD700">Ismail El Asiouty</strong>
+        </div>
+    </div>""",
+        unsafe_allow_html=True
+    )
     st.markdown("---")
 
     site_url_input = st.text_input(
@@ -572,12 +676,17 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown("""
-    <div style="font-size:11px; color:#888; text-align:center; line-height:1.6">
+    <div style="font-size:11px; color:#ccb84a; text-align:center; line-height:1.8">
     🚀 SEO Suite Pro v2.0<br>
-    Python + Streamlit Edition<br>
-    Schema • Sitemap • Keywords
-    </div>
-    """, unsafe_allow_html=True)
+    <span style="color:#FFD700; font-weight:700">Ismail El Asiouty</span><br>
+    SEO Specialist | Python & AI Tools<br>
+    <a href="https://www.linkedin.com/in/ismailelasiouty/" target="_blank"
+       style="color:#FFD700; text-decoration:none">🔗 LinkedIn</a> &nbsp;|&nbsp;
+    <a href="https://wa.me/201014672352" target="_blank"
+       style="color:#FFD700; text-decoration:none">💬 WhatsApp</a>
+    </div>""",
+        unsafe_allow_html=True
+    )
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -667,11 +776,12 @@ if site_url_input:
 #  📊 TABS
 # ═══════════════════════════════════════════════════════════════
 
-tab_dash, tab_sitemap, tab_schema, tab_kw = st.tabs([
+tab_dash, tab_sitemap, tab_schema, tab_kw, tab_contact = st.tabs([
     "🏠 Master Dashboard",
     "🗺️ Sitemap Analyzer",
     "🔍 Schema Checker",
     "🔑 Keyword Extractor",
+    "👤 التواصل",
 ])
 
 # ── Fetch session data ───────────────────────────────────────────
@@ -687,17 +797,39 @@ analyzed_url     = st.session_state.get("analyzed_url", "")
 with tab_dash:
     if not sitemap_data and not page_results:
         st.markdown("""
-        <div style="text-align:center; padding:80px 20px">
+        <div style="text-align:center; padding:60px 20px">
             <div style="font-size:72px; margin-bottom:16px">🚀</div>
-            <h2 style="color:#1a1a2e; font-size:28px; font-weight:800">SEO Suite Pro</h2>
-            <p style="color:#666; font-size:16px; max-width:500px; margin:0 auto 24px">
+            <h2 style="color:#FFD700; font-size:30px; font-weight:900;
+                       text-shadow:0 0 20px rgba(255,215,0,0.3)">SEO Suite Pro</h2>
+            <div style="color:#888; font-size:13px; margin-bottom:6px">
+                by <strong style="color:#FFD700">Ismail El Asiouty</strong> — SEO Specialist | Python & AI Tools
+            </div>
+            <p style="color:#666; font-size:15px; max-width:520px; margin:16px auto 28px">
                 أدخل رابط الموقع في الـ Sidebar واضغط <strong>شغّل الـ 3 أدوات</strong>
                 للحصول على تقرير SEO كامل
             </p>
-            <div style="display:flex; justify-content:center; gap:24px; flex-wrap:wrap; color:#888; font-size:13px">
+            <div style="display:flex; justify-content:center; gap:24px; flex-wrap:wrap;
+                        color:#ccb84a; font-size:13px; margin-bottom:32px">
                 <span>🗺️ Sitemap Analyzer</span>
                 <span>🔍 Schema Checker</span>
                 <span>🔑 Keyword Extractor</span>
+                <span>📥 Export CSV</span>
+            </div>
+            <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+                <a href="https://www.linkedin.com/in/ismailelasiouty/" target="_blank"
+                   style="display:inline-flex;align-items:center;gap:8px;
+                          background:rgba(255,215,0,0.1);border:1px solid #FFD700;
+                          color:#FFD700;padding:9px 20px;border-radius:25px;
+                          font-size:12px;font-weight:700;text-decoration:none;">
+                    🔗 LinkedIn
+                </a>
+                <a href="https://wa.me/201014672352" target="_blank"
+                   style="display:inline-flex;align-items:center;gap:8px;
+                          background:rgba(37,211,102,0.1);border:1px solid #25D366;
+                          color:#25D366;padding:9px 20px;border-radius:25px;
+                          font-size:12px;font-weight:700;text-decoration:none;">
+                    💬 WhatsApp
+                </a>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -890,6 +1022,7 @@ with tab_sitemap:
             st.dataframe(style_status_df(df_all, "🚦 الحالة"),
                          use_container_width=True, height=500,
                          column_config={"🔗 الرابط": st.column_config.LinkColumn()})
+            download_buttons(df_all, "sitemap_full_report", "كل صفحات الـ Sitemap")
 
         with sub2:
             if sm["old"]:
@@ -897,6 +1030,7 @@ with tab_sitemap:
                 st.dataframe(style_status_df(df_old, "🚦 الحالة"),
                              use_container_width=True, height=400,
                              column_config={"🔗 الرابط": st.column_config.LinkColumn()})
+                download_buttons(df_old, "sitemap_urgent_update", "صفحات تحتاج تحديث عاجل")
             else:
                 st.success("🎉 كل المحتوى حديث! مفيش صفحات تحتاج تحديث عاجل.")
 
@@ -983,6 +1117,7 @@ with tab_schema:
                 st.dataframe(style_status_df(df_issues, "⚠️ المشكلة"),
                              use_container_width=True, height=450,
                              column_config={"🔗 الرابط": st.column_config.LinkColumn()})
+                download_buttons(df_issues, "schema_issues_report", "مشاكل الـ Schema")
             else:
                 st.success("🎉 مفيش مشاكل! كل الـ Schema سليم 100%")
 
@@ -1034,6 +1169,7 @@ with tab_schema:
             st.dataframe(style_status_df(df_all, "🚦 الحالة"),
                          use_container_width=True, height=500,
                          column_config={"🔗 الرابط": st.column_config.LinkColumn()})
+            download_buttons(df_all, "schema_full_report", "تقرير Schema الكامل")
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -1122,6 +1258,7 @@ with tab_kw:
                     use_container_width=True, height=500,
                     column_config={"🔗 أهم صفحة": st.column_config.LinkColumn()}
                 )
+                download_buttons(df_top, "top_keywords_report", "أهم الكلمات المفتاحية")
 
         with k2:
             rows = []
@@ -1220,3 +1357,57 @@ with tab_kw:
                           f"{round(desc_ok/n*100) if n else 0}%")
             col_m3.metric("🎯 فيها Focus Keyword", f"{focus_ok}/{n}",
                           f"{round(focus_ok/n*100) if n else 0}%")
+            download_buttons(df_meta, "meta_data_report", "تقرير الـ Meta Data")
+
+
+# ═══════════════════════════════════════════════════════════════
+#  👤 TAB 5: CONTACT / ABOUT
+# ═══════════════════════════════════════════════════════════════
+with tab_contact:
+    _contact_html = (
+        "<div style='background:linear-gradient(135deg,#0a0a0a 0%,#1a1100 50%,#0a0a0a 100%);"
+        "border:2px solid #FFD700;border-radius:20px;padding:40px;margin:20px auto;"
+        "max-width:750px;box-shadow:0 0 40px rgba(255,215,0,0.15);text-align:center;'>"
+        "<div style='font-size:60px;margin-bottom:16px'>&#128640;</div>"
+        "<div style='font-size:32px;font-weight:900;color:#FFD700;"
+        "text-shadow:0 0 20px rgba(255,215,0,0.5);margin-bottom:8px;'>Ismail El Asiouty</div>"
+        "<div style='font-size:14px;color:#ccb84a;line-height:1.9;margin-bottom:28px;"
+        "max-width:560px;margin-left:auto;margin-right:auto;'>"
+        "SEO Specialist | User Experience Analysis<br>"
+        "Building SEO Tools with Python &amp; AI | Content Optimization</div>"
+        "<div style='display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:32px;'>"
+        "<a href='https://www.linkedin.com/in/ismailelasiouty/' target='_blank' "
+        "style='display:inline-flex;align-items:center;gap:10px;"
+        "background:rgba(255,215,0,0.1);border:1.5px solid #FFD700;"
+        "color:#FFD700;padding:12px 24px;border-radius:30px;"
+        "font-size:14px;font-weight:700;text-decoration:none;'>&#128279; LinkedIn Profile</a>"
+        "<a href='https://wa.me/201014672352' target='_blank' "
+        "style='display:inline-flex;align-items:center;gap:10px;"
+        "background:rgba(37,211,102,0.1);border:1.5px solid #25D366;"
+        "color:#25D366;padding:12px 24px;border-radius:30px;"
+        "font-size:14px;font-weight:700;text-decoration:none;'>&#128172; WhatsApp: 01014672352</a>"
+        "</div>"
+        "<hr style='border-color:#3d2b00;margin:24px 0;'>"
+        "<div style='display:grid;grid-template-columns:repeat(3,1fr);gap:16px;"
+        "text-align:center;margin-bottom:24px;'>"
+        "<div style='background:rgba(255,215,0,0.06);border:1px solid #3d2b00;"
+        "border-radius:12px;padding:16px;'>"
+        "<div style='font-size:28px'>&#128269;</div>"
+        "<div style='color:#FFD700;font-weight:700;font-size:13px;margin:6px 0 4px'>SEO Analysis</div>"
+        "<div style='color:#888;font-size:12px'>Schema &#8226; Sitemap &#8226; Keywords</div></div>"
+        "<div style='background:rgba(255,215,0,0.06);border:1px solid #3d2b00;"
+        "border-radius:12px;padding:16px;'>"
+        "<div style='font-size:28px'>&#128013;</div>"
+        "<div style='color:#FFD700;font-weight:700;font-size:13px;margin:6px 0 4px'>Python &amp; AI Tools</div>"
+        "<div style='color:#888;font-size:12px'>Automation &#8226; Streamlit &#8226; APIs</div></div>"
+        "<div style='background:rgba(255,215,0,0.06);border:1px solid #3d2b00;"
+        "border-radius:12px;padding:16px;'>"
+        "<div style='font-size:28px'>&#9997;&#65039;</div>"
+        "<div style='color:#FFD700;font-weight:700;font-size:13px;margin:6px 0 4px'>Content Optimization</div>"
+        "<div style='color:#888;font-size:12px'>UX &#8226; Copy &#8226; Strategy</div></div>"
+        "</div>"
+        "<div style='color:#888;font-size:12px;margin-top:16px;'>"
+        "&#128640; SEO Suite Pro v2.0 &#8212; Built with Python &amp; Streamlit</div>"
+        "</div>"
+    )
+    st.html(_contact_html)

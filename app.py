@@ -588,47 +588,22 @@ def style_status_df(df: pd.DataFrame, status_col: str) -> pd.DataFrame.style:
 
 
 def download_buttons(df: pd.DataFrame, filename: str, label: str = "📥 تحميل النتائج") -> None:
-    """Render CSV download + Google Sheets import button for a dataframe."""
+    """Render CSV download + Google Sheets instructions."""
     if df is None or df.empty:
         return
-    st.markdown(f"""
-    <div style="background:linear-gradient(135deg,#0a0a0a,#1a1100);
-                border:1px solid #FFD700; border-radius:12px;
-                padding:14px 20px; margin:14px 0;">
-        <div style="color:#FFD700; font-size:13px; font-weight:700; margin-bottom:10px;">
-            📥 تحميل / Export — {label}
-        </div>
-    </div>""",
+    import base64
+    csv_bytes = df.to_csv(index=False, encoding="utf-8-sig").encode("utf-8-sig")
+    b64 = base64.b64encode(csv_bytes).decode()
+    st.markdown(
+        f'''<div style="background:linear-gradient(135deg,#0a0a0a,#1a1100);border:1px solid #FFD700;border-radius:12px;padding:16px 20px;margin:14px 0;">
+<div style="color:#FFD700;font-size:13px;font-weight:700;margin-bottom:12px;">📥 تحميل / Export — {label}</div>
+<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+<a href="data:text/csv;charset=utf-8-sig;base64,{b64}" download="{filename}.csv" style="display:inline-flex;align-items:center;gap:8px;background:#1a1100;border:1.5px solid #FFD700;color:#FFD700;padding:9px 20px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">⬇️ تحميل CSV</a>
+<a href="https://docs.google.com/spreadsheets/d/new" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#0f9d58;border:1.5px solid #0f9d58;color:white;padding:9px 20px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">📊 فتح Google Sheets جديد</a>
+<span style="color:#888;font-size:12px;">← حمّل الـ CSV ثم في Sheets: <strong style="color:#ccb84a">File ← Import ← Upload</strong></span>
+</div></div>''',
         unsafe_allow_html=True
     )
-
-    col_csv, col_sheets, col_info = st.columns([1, 1, 2])
-
-    # CSV download
-    csv_bytes = df.to_csv(index=False, encoding="utf-8-sig").encode("utf-8-sig")
-    with col_csv:
-        st.download_button(
-            label="⬇️ تحميل CSV",
-            data=csv_bytes,
-            file_name=f"{filename}.csv",
-            mime="text/csv",
-            use_container_width=True,
-        )
-
-    # Google Sheets via CSV import link
-    import urllib.parse
-    with col_sheets:
-        st.markdown(
-            f'<a href="https://docs.google.com/spreadsheets/d/new" target="_blank">'
-            f'<button style="width:100%;background:#0f9d58;color:white;border:none;'
-            f'border-radius:6px;padding:8px 12px;font-size:14px;cursor:pointer;font-weight:600;">'
-            f'📊 فتح Google Sheets</button></a>',
-            unsafe_allow_html=True
-        )
-
-    with col_info:
-        st.caption("💡 للـ Google Sheets: حمّل الـ CSV أولاً ثم استورده من File → Import")
-
 
 # ═══════════════════════════════════════════════════════════════
 #  🗂️ SIDEBAR

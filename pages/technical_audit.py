@@ -1,4 +1,3 @@
-
 """
 ╔══════════════════════════════════════════════════════╗
 ║   🔧 Technical Audit Pro                            ║
@@ -504,6 +503,7 @@ with tab_status:
         with st.spinner("بيفحص الصفحات ..."):
             status_results = audit_sitemap_status(base_url, max_pages, prog)
         prog.empty()
+        st.session_state["status_results"] = status_results
 
         if not status_results:
             st.warning("⚠️ مش قادر يجيب URLs من الـ Sitemap — تأكد إن الـ Sitemap موجود وشغّال")
@@ -580,8 +580,9 @@ with tab_resources:
         st.markdown('<div class="section-header">📦 تحليل حجم JS / CSS / الصفحات</div>',
                     unsafe_allow_html=True)
 
-        if "status_results" not in dir() or not status_results:
-            st.warning("⚠️ لازم تشغّل فحص الـ Status Codes الأول عشان يجيب قائمة الـ URLs")
+        status_results = st.session_state.get("status_results", [])
+        if not status_results:
+            st.warning("⚠️ روح تاب **🔴 Status Codes** الأول واضغط زرار التشغيل — بعدين ارجع هنا")
         else:
             sample = [
                 r["🔗 الرابط"] for r in status_results

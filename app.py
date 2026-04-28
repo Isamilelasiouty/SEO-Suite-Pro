@@ -21,7 +21,7 @@ from urllib.parse import urlparse
 # ═══════════════════════════════════════════════════════════════
 #  ⚙️ CONFIGURATION
 # ═══════════════════════════════════════════════════════════════
-DEFAULT_CFG = dict(OLD_MONTHS=12, WARN_MONTHS=6, MAX_PAGES=150,
+DEFAULT_CFG = dict(OLD_MONTHS=12, WARN_MONTHS=6, MAX_PAGES=500,
                    MIN_WORD_LEN=4, MIN_WORD_FREQ=3, TOP_KEYWORDS=30)
 
 STOP_WORDS = {
@@ -630,7 +630,7 @@ with st.sidebar:
     )
     st.markdown("---")
     st.markdown("**⚙️ إعدادات التحليل**")
-    max_pages   = st.slider("📄 أقصى صفحات",    10, 300, DEFAULT_CFG["MAX_PAGES"], 10)
+    max_pages   = st.number_input("📄 أقصى صفحات", min_value=10, max_value=15000, value=DEFAULT_CFG["MAX_PAGES"], step=100)
     old_months  = st.slider("🔴 أقدم من (شهر)", 3,  24,  DEFAULT_CFG["OLD_MONTHS"])
     warn_months = st.slider("🟡 مراجعة (شهر)",  1,  12,  DEFAULT_CFG["WARN_MONTHS"])
 

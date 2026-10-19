@@ -130,14 +130,17 @@ def render_offpage_view():
         col_c1, col_c2 = st.columns([1, 1.2])
         
         with col_c1:
-            fig_pie = go.Figure(data=[go.Pie(
-                labels=list(result["distribution_pct"].keys()),
-                values=list(result["distribution_pct"].values()),
-                hole=0.55,
-                marker=dict(colors=["#EF5350", "#FFA726", "#D4AF37", "#9E9E9E", "#B8962E"]),
-                textinfo="label+percent"
-            )])
-            st.plotly_chart(style_plotly_figure(fig_pie, "Anchor Category Distribution", height=320), use_container_width=True)
+            if result.get("distribution_pct") and any(v > 0 for v in result["distribution_pct"].values()):
+                fig_pie = go.Figure(data=[go.Pie(
+                    labels=list(result["distribution_pct"].keys()),
+                    values=list(result["distribution_pct"].values()),
+                    hole=0.55,
+                    marker=dict(colors=["#EF5350", "#FFA726", "#D4AF37", "#9E9E9E", "#B8962E"]),
+                    textinfo="label+percent"
+                )])
+                st.plotly_chart(style_plotly_figure(fig_pie, "Anchor Category Distribution", height=320), use_container_width=True)
+            else:
+                st.info("No anchor distribution data available.")
             
         with col_c2:
             st.markdown("#### Algorithmic Risk Assessment & Recommendations" if not is_ar else "#### التقييم الفني للمخاطر وتوصيات المعالجة")

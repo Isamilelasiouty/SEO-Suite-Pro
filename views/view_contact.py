@@ -5,6 +5,7 @@ STRICT: Zero emojis, luxury gold, black, and white design system.
 Bilingual support (English & Arabic) and Light/Dark mode compatible.
 """
 
+import textwrap
 import streamlit as st
 from core.config import (
     BRAND_OWNER,
@@ -28,10 +29,11 @@ def render_contact_view():
     name_display = t("contact_spec_title") if is_ar else BRAND_OWNER
     role_display = t("contact_spec_role") if is_ar else BRAND_ROLE
     desc_display = t("contact_spec_desc")
+    logo_img_tag = f'<img src="{logo_uri}" style="width:76px;height:76px;border-radius:14px;border:1.5px solid var(--gold);margin-bottom:16px;object-fit:cover;box-shadow:0 4px 16px var(--gold-tint);" />' if logo_uri else ''
     
-    st.markdown(f"""
+    card_html = textwrap.dedent(f"""
     <div class="glass-card" style="text-align:center;padding:40px 30px;max-width:840px;margin:20px auto;">
-        {'<img src="' + logo_uri + '" style="width:76px;height:76px;border-radius:14px;border:1.5px solid var(--gold);margin-bottom:16px;object-fit:cover;box-shadow:0 4px 16px var(--gold-tint);" />' if logo_uri else ''}
+        {logo_img_tag}
         <div style="font-family:'Poppins','Cairo',sans-serif;font-size:30px;font-weight:900;color:var(--gold);letter-spacing:-0.01em;">
             {name_display}
         </div>
@@ -84,6 +86,7 @@ def render_contact_view():
             </div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """).strip()
+    st.markdown(card_html, unsafe_allow_html=True)
     
     render_footer()

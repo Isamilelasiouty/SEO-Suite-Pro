@@ -6,6 +6,7 @@ On-Page Technical SEO Audit View for SEO Suite Pro:
 - Export to CSV, Excel (.xlsx), and executive PDF
 - One-click persistence to user's private history
 - Fully bilingual (English & Arabic) with dynamic Light & Dark mode support
+- Strict defensive error handling preventing unhandled exceptions
 """
 
 import pandas as pd
@@ -125,12 +126,35 @@ def render_onpage_view():
     target_url = audit_data["target_url"]
     valid_pages = [p for p in pages if "error" not in p or not p.get("error")]
     
+    # Check if all crawled pages failed
+    if not valid_pages:
+        err_detail = pages[0].get("error", "No readable content returned.") if pages else "No pages could be crawled."
+        status_code = pages[0].get("status_code", 0) if pages else 0
+        err_msg_text = (
+            f"تعذر استخراج محتوى HTML للرابط المستهدف {target_url} (كود الاستجابة HTTP {status_code}): {err_detail}"
+            if is_ar else
+            f"Audit could not extract readable HTML content for {target_url} (HTTP Status {status_code}): {err_detail}"
+        )
+        st.warning(err_msg_text)
+        
+        if pages:
+            df_err = pd.DataFrame([{
+                "URL": p.get("url"),
+                "HTTP Status": p.get("status_code"),
+                "Latency (ms)": p.get("elapsed_ms"),
+                "Details": p.get("error") or f"HTTP {p.get('status_code')}"
+            } for p in pages])
+            st.dataframe(df_err, use_container_width=True)
+            
+        render_footer()
+        return
+    
     # Overview KPIs
     avg_score = round(sum(p.get("score", 0) for p in valid_pages) / max(1, len(valid_pages)))
     total_scanned = len(pages)
-    missing_title = sum(1 for p in valid_pages if p["title"]["status"] == "Missing")
-    missing_desc = sum(1 for p in valid_pages if p["meta_description"]["status"] == "Missing")
-    missing_h1 = sum(1 for p in valid_pages if p["headings"]["h1_status"] == "Missing")
+    missing_title = sum(1 for p in valid_pages if p.get("title", {}).get("status") == "Missing")
+    missing_desc = sum(1 for p in valid_pages if p.get("meta_description", {}).get("status") == "Missing")
+    missing_h1 = sum(1 for p in valid_pages if p.get("headings", {}).get("h1_status") == "Missing")
     
     render_kpi_row([
         (t("kpi_health_score"), f"{avg_score} / 100", "Composite weighted score"),
@@ -157,20 +181,28 @@ def render_onpage_view():
     with col_exp:
         rows_summary = []
         for i, p in enumerate(valid_pages, 1):
+            title_info = p.get("title", {})
+            meta_info = p.get("meta_description", {})
+            head_info = p.get("headings", {})
+            content_info = p.get("content", {})
+            dir_info = p.get("directives", {})
+            schema_info = p.get("schema", {})
+            img_info = p.get("images", {})
+            
             rows_summary.append({
                 "#": i,
-                "URL": p["url"],
+                "URL": p.get("url", ""),
                 "Health Score": p.get("score", 0),
-                "Title": p["title"]["text"],
-                "Title Length": p["title"]["length"],
-                "Title Status": p["title"]["status"],
-                "Meta Description": p["meta_description"]["text"],
-                "H1 Count": p["headings"]["h1_count"],
-                "Word Count": p["content"]["word_count"],
-                "Readability (Flesch)": p["content"]["flesch_reading_ease"],
-                "Canonical Status": p["directives"]["canonical_status"],
-                "Has Schema": "Yes" if p["schema"]["has_schema"] else "No",
-                "Images Missing Alt": p["images"]["missing_alt_count"]
+                "Title": title_info.get("text", ""),
+                "Title Length": title_info.get("length", 0),
+                "Title Status": title_info.get("status", "Missing"),
+                "Meta Description": meta_info.get("text", ""),
+                "H1 Count": head_info.get("h1_count", 0),
+                "Word Count": content_info.get("word_count", 0),
+                "Readability (Flesch)": content_info.get("flesch_reading_ease", 0.0),
+                "Canonical Status": dir_info.get("canonical_status", "Not Specified"),
+                "Has Schema": "Yes" if schema_info.get("has_schema") else "No",
+                "Images Missing Alt": img_info.get("missing_alt_count", 0)
             })
         df_export = pd.DataFrame(rows_summary)
         
@@ -196,7 +228,7 @@ def render_onpage_view():
                         "category": "On-Page Factor",
                         "severity": "High" if "H1" in d or "title" in d else "Medium",
                         "item": d,
-                        "url": p["url"],
+                        "url": p.get("url", ""),
                         "problem": d,
                         "fix": "Review on-page optimization rules."
                     })
@@ -221,35 +253,53 @@ def render_onpage_view():
         with col_r1:
             readability_df = pd.DataFrame([{
                 "URL": p["url"][:60],
-                "Word Count": p["content"]["word_count"],
-                "Flesch Reading Ease": p["content"]["flesch_reading_ease"],
-                "Grade Level": p["content"]["flesch_grade_level"],
-                "Assessment": p["content"]["readability_label"]
+                "Word Count": p.get("content", {}).get("word_count", 0),
+                "Flesch Reading Ease": p.get("content", {}).get("flesch_reading_ease", 0.0),
+                "Grade Level": p.get("content", {}).get("flesch_grade_level", "N/A"),
+                "Assessment": p.get("content", {}).get("readability_label", "Standard")
             } for p in valid_pages])
             st.dataframe(readability_df, use_container_width=True)
+            
         with col_r2:
-            fig = px.histogram(readability_df, x="Flesch Reading Ease", nbins=10, title="Readability Distribution (60-70 is standard)", color_discrete_sequence=["#D4AF37"])
-            st.plotly_chart(style_plotly_figure(fig, "Readability Score Distribution"), use_container_width=True)
+            if len(readability_df) >= 2 and "Flesch Reading Ease" in readability_df.columns:
+                try:
+                    fig = px.histogram(readability_df, x="Flesch Reading Ease", nbins=10, title="Readability Distribution (60-70 is standard)", color_discrete_sequence=["#D4AF37"])
+                    st.plotly_chart(style_plotly_figure(fig, "Readability Score Distribution"), use_container_width=True)
+                except Exception:
+                    st.info(f"Average Flesch Reading Ease: {readability_df['Flesch Reading Ease'].mean():.1f}")
+            elif len(readability_df) == 1:
+                single_score = readability_df.iloc[0].get("Flesch Reading Ease", 0.0)
+                single_label = readability_df.iloc[0].get("Assessment", "")
+                st.markdown(
+                    f'<div class="metric-card"><div class="card-label">Flesch Reading Ease</div><div class="card-value">{single_score}</div><div class="card-subtitle">{single_label} (Target: 60-70)</div></div>',
+                    unsafe_allow_html=True
+                )
+            else:
+                st.info("No readability metrics available for the audited pages.")
             
     with tab_schema:
         render_section_header("Structured Data & Schema.org Audit" if not is_ar else "البيانات المنظمة وفحص Schema.org")
         schema_rows = []
         for p in valid_pages:
+            schema_info = p.get("schema", {})
             schema_rows.append({
                 "URL": p["url"][:60],
-                "Has Schema": "Valid" if p["schema"]["has_schema"] and not p["schema"]["issues"] else "Issues" if p["schema"]["issues"] else "None",
-                "Declared Types": ", ".join(p["schema"]["types"]) or "None",
-                "Duplicates": ", ".join(p["schema"]["duplicates"]) or "None",
-                "Issues Detected": len(p["schema"]["issues"])
+                "Has Schema": "Valid" if schema_info.get("has_schema") and not schema_info.get("issues") else "Issues" if schema_info.get("issues") else "None",
+                "Declared Types": ", ".join(schema_info.get("types", [])) or "None",
+                "Duplicates": ", ".join(schema_info.get("duplicates", [])) or "None",
+                "Issues Detected": len(schema_info.get("issues", []))
             })
-        st.dataframe(pd.DataFrame(schema_rows), use_container_width=True)
+        if schema_rows:
+            st.dataframe(pd.DataFrame(schema_rows), use_container_width=True)
+        else:
+            st.info("No structured schema data detected.")
         
     with tab_technical:
         render_section_header("Robots.txt Directives & Server Headers" if not is_ar else "تعليمات Robots.txt وترويسات الأمان")
         col_t1, col_t2 = st.columns(2)
         with col_t1:
-            st.markdown("#### Robots.txt Analysis")
-            rb = audit_data["robots"]
+            st.markdown("#### Robots.txt Analysis" if not is_ar else "#### فحص ملف Robots.txt")
+            rb = audit_data.get("robots", {})
             st.write(f"**Status:** {'Accessible (HTTP 200)' if rb.get('exists') else 'Not Found'}")
             st.write(f"**Disallow Directives:** {len(rb.get('disallowed', []))}")
             st.write(f"**Declared Sitemaps:** {len(rb.get('sitemaps', []))}")
@@ -259,21 +309,30 @@ def render_onpage_view():
             else:
                 st.success("No blocking issues detected in robots.txt.")
         with col_t2:
-            st.markdown("#### Server Response Headers")
-            st.dataframe(pd.DataFrame(audit_data["server_headers"]), use_container_width=True)
+            st.markdown("#### Server Response Headers" if not is_ar else "#### ترويسات استجابة السيرفر")
+            headers_data = audit_data.get("server_headers", [])
+            if headers_data:
+                st.dataframe(pd.DataFrame(headers_data), use_container_width=True)
+            else:
+                st.info("No server header data captured.")
             
     with tab_links:
         render_section_header("Internal/External Links & Media Alt Text" if not is_ar else "الروابط الداخلية والخارجية ونصوص الصور")
         media_rows = []
         for p in valid_pages:
+            img_info = p.get("images", {})
+            link_info = p.get("links", {})
             media_rows.append({
                 "URL": p["url"][:60],
-                "Total Images": p["images"]["total"],
-                "Missing Alt Text": p["images"]["missing_alt_count"],
-                "Internal Links": p["links"]["internal_count"],
-                "External Links": p["links"]["external_count"],
-                "Nofollow Links": p["links"]["nofollow_count"]
+                "Total Images": img_info.get("total", 0),
+                "Missing Alt Text": img_info.get("missing_alt_count", 0),
+                "Internal Links": link_info.get("internal_count", 0),
+                "External Links": link_info.get("external_count", 0),
+                "Nofollow Links": link_info.get("nofollow_count", 0)
             })
-        st.dataframe(pd.DataFrame(media_rows), use_container_width=True)
+        if media_rows:
+            st.dataframe(pd.DataFrame(media_rows), use_container_width=True)
+        else:
+            st.info("No media or link data captured.")
         
     render_footer()

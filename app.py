@@ -222,12 +222,13 @@ if not is_authenticated():
         if logo_uri:
             st.markdown(f'<div style="text-align:center;padding:16px 0;"><img src="{logo_uri}" style="width:56px;height:56px;border-radius:10px;border:1px solid #D4AF37;object-fit:cover;" /></div>', unsafe_allow_html=True)
             
-        st.markdown(f"""
-        <div style="text-align:center;padding:0 10px 14px;">
-            <div style="font-family:'Poppins','Cairo',sans-serif;font-size:18px;font-weight:800;color:var(--gold);">{BRAND_NAME}</div>
-            <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">{BRAND_OWNER}</div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(
+            f'<div style="text-align:center;padding:0 10px 14px;">'
+            f'<div style="font-family:\'Poppins\',\'Cairo\',sans-serif;font-size:18px;font-weight:800;color:var(--gold);">{BRAND_NAME}</div>'
+            f'<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">{BRAND_OWNER}</div>'
+            f'</div>',
+            unsafe_allow_html=True
+        )
         
         # Theme & Language Switches on Login Sidebar
         render_theme_lang_controls()
@@ -238,19 +239,16 @@ if not is_authenticated():
             if active_lang == "ar"
             else "Welcome to SEO Suite Pro. Sign in to access your private technical audit vault, Search Console analysis, and AI optimization roadmaps."
         )
-        st.markdown(f"""
-        <div style="font-size:12px;color:var(--text-muted);line-height:1.7;">
-            {welcome_intro}
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(f'<div style="font-size:12px;color:var(--text-muted);line-height:1.7;">{welcome_intro}</div>', unsafe_allow_html=True)
         st.markdown("---")
-        st.markdown(f"""
-        <div style="font-size:11px;color:var(--text-muted);text-align:center;">
-            {t('built_by')} {BRAND_OWNER}<br/>
-            <a href="{PORTFOLIO_URL}" target="_blank" style="color:var(--gold);text-decoration:none;">{t('portfolio')}</a> &bull; 
-            <a href="{LINKEDIN_URL}" target="_blank" style="color:var(--gold);text-decoration:none;">LinkedIn</a>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(
+            f'<div style="font-size:11px;color:var(--text-muted);text-align:center;">'
+            f'{t("built_by")} {BRAND_OWNER}<br/>'
+            f'<a href="{PORTFOLIO_URL}" target="_blank" style="color:var(--gold);text-decoration:none;">{t("portfolio")}</a> &bull; '
+            f'<a href="{LINKEDIN_URL}" target="_blank" style="color:var(--gold);text-decoration:none;">LinkedIn</a>'
+            f'</div>',
+            unsafe_allow_html=True
+        )
         
     render_auth_view()
     st.stop()
@@ -265,12 +263,13 @@ else:
         if logo_uri:
             st.markdown(f'<div style="text-align:center;padding:12px 0 8px;"><img src="{logo_uri}" style="width:54px;height:54px;border-radius:10px;border:1px solid #D4AF37;object-fit:cover;" /></div>', unsafe_allow_html=True)
             
-        st.markdown(f"""
-        <div style="text-align:center;padding-bottom:10px;">
-            <div style="font-family:'Poppins','Cairo',sans-serif;font-size:18px;font-weight:800;color:var(--gold);">{BRAND_NAME}</div>
-            <div style="font-size:11px;color:var(--text-muted);">{BRAND_ROLE}</div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(
+            f'<div style="text-align:center;padding-bottom:10px;">'
+            f'<div style="font-family:\'Poppins\',\'Cairo\',sans-serif;font-size:18px;font-weight:800;color:var(--gold);">{BRAND_NAME}</div>'
+            f'<div style="font-size:11px;color:var(--text-muted);">{BRAND_ROLE}</div>'
+            f'</div>',
+            unsafe_allow_html=True
+        )
         
         # Theme & Language Switches
         render_theme_lang_controls()
@@ -278,12 +277,13 @@ else:
         # User Profile Box
         role_badge = t("role_admin") if user and user.get("role") == "admin" else t("role_user")
         username_display = user["username"] if user else "Analyst"
-        st.markdown(f"""
-        <div style="background:var(--bg-surface);border:1px solid var(--gold-border);border-radius:8px;padding:10px 14px;margin:12px 0 16px;">
-            <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">{t('active_account')}</div>
-            <div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-top:2px;">{username_display} <span style="font-size:10px;color:var(--gold);">{role_badge}</span></div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(
+            f'<div style="background:var(--bg-surface);border:1px solid var(--gold-border);border-radius:8px;padding:10px 14px;margin:12px 0 16px;">'
+            f'<div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">{t("active_account")}</div>'
+            f'<div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-top:2px;">{username_display} <span style="font-size:10px;color:var(--gold);">{role_badge}</span></div>'
+            f'</div>',
+            unsafe_allow_html=True
+        )
         
         # Navigation Options
         NAV_ITEMS = [
@@ -323,14 +323,15 @@ else:
         if st.button(t("nav_signout"), use_container_width=True):
             logout_user()
             
-        st.markdown(f"""
-        <div style="padding-top:16px;text-align:center;font-size:11px;color:var(--text-muted);line-height:1.7;">
-            {t('built_by')} <strong style="color:var(--gold);">{BRAND_OWNER}</strong><br/>
-            <a href="{PORTFOLIO_URL}" target="_blank" style="color:var(--gold);text-decoration:none;">{t('portfolio')}</a> &bull; 
-            <a href="{LINKEDIN_URL}" target="_blank" style="color:var(--gold);text-decoration:none;">LinkedIn</a> &bull; 
-            <a href="{WHATSAPP_URL}" target="_blank" style="color:var(--gold);text-decoration:none;">WhatsApp</a>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(
+            f'<div style="padding-top:16px;text-align:center;font-size:11px;color:var(--text-muted);line-height:1.7;">'
+            f'{t("built_by")} <strong style="color:var(--gold);">{BRAND_OWNER}</strong><br/>'
+            f'<a href="{PORTFOLIO_URL}" target="_blank" style="color:var(--gold);text-decoration:none;">{t("portfolio")}</a> &bull; '
+            f'<a href="{LINKEDIN_URL}" target="_blank" style="color:var(--gold);text-decoration:none;">LinkedIn</a> &bull; '
+            f'<a href="{WHATSAPP_URL}" target="_blank" style="color:var(--gold);text-decoration:none;">WhatsApp</a>'
+            f'</div>',
+            unsafe_allow_html=True
+        )
 
     # ─── Page Router ─────────────────────────────────────────────────
     if selected_key == "dashboard":

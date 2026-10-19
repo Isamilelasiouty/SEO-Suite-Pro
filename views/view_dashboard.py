@@ -6,6 +6,7 @@ Master Executive Dashboard View for SEO Suite Pro:
 - Fully bilingual (English & Arabic) and Light/Dark mode compatible
 """
 
+import textwrap
 import streamlit as st
 from core.auth import get_current_user
 from core.database import get_user_analyses
@@ -25,7 +26,7 @@ def render_dashboard_view():
     render_header(subtitle=welcome_sub)
     
     # Hero Intro Card
-    st.markdown(f"""
+    intro_html = textwrap.dedent(f"""
     <div class="glass-card">
         <div style="font-family:'Poppins','Cairo',sans-serif;font-size:22px;font-weight:800;color:var(--gold);margin-bottom:8px;">
             {t('dash_title')}
@@ -34,7 +35,8 @@ def render_dashboard_view():
             {t('dash_desc')}
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """).strip()
+    st.markdown(intro_html, unsafe_allow_html=True)
     
     # User Private Stats
     recent_analyses = get_user_analyses(user["id"]) if user else []
@@ -54,7 +56,7 @@ def render_dashboard_view():
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        st.markdown(f"""
+        c1_html = textwrap.dedent(f"""
         <div class="glass-card" style="height:220px;">
             <div class="card-label">{t('mod_onpage_badge')}</div>
             <div style="font-size:16px;font-weight:700;color:var(--text-primary);margin-bottom:8px;">{t('mod_onpage_title')}</div>
@@ -62,13 +64,14 @@ def render_dashboard_view():
                 {t('mod_onpage_desc')}
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """).strip()
+        st.markdown(c1_html, unsafe_allow_html=True)
         if st.button(t("launch_onpage"), key="btn_dash_onpage", use_container_width=True):
             st.session_state["nav_target"] = "onpage"
             st.rerun()
             
     with col2:
-        st.markdown(f"""
+        c2_html = textwrap.dedent(f"""
         <div class="glass-card" style="height:220px;">
             <div class="card-label">{t('mod_gsc_badge')}</div>
             <div style="font-size:16px;font-weight:700;color:var(--gold);margin-bottom:8px;">{t('mod_gsc_title')}</div>
@@ -76,13 +79,14 @@ def render_dashboard_view():
                 {t('mod_gsc_desc')}
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """).strip()
+        st.markdown(c2_html, unsafe_allow_html=True)
         if st.button(t("launch_gsc"), key="btn_dash_gsc", type="primary", use_container_width=True):
             st.session_state["nav_target"] = "gsc"
             st.rerun()
             
     with col3:
-        st.markdown(f"""
+        c3_html = textwrap.dedent(f"""
         <div class="glass-card" style="height:220px;">
             <div class="card-label">{t('mod_offpage_badge')}</div>
             <div style="font-size:16px;font-weight:700;color:var(--text-primary);margin-bottom:8px;">{t('mod_offpage_title')}</div>
@@ -90,7 +94,8 @@ def render_dashboard_view():
                 {t('mod_offpage_desc')}
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """).strip()
+        st.markdown(c3_html, unsafe_allow_html=True)
         if st.button(t("launch_offpage"), key="btn_dash_offpage", use_container_width=True):
             st.session_state["nav_target"] = "offpage"
             st.rerun()

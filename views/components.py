@@ -65,61 +65,39 @@ def render_header(subtitle: str = ""):
     """Renders the executive brand header with logo, title, and portfolio link."""
     logo_uri = get_logo_base64()
     logo_html = f'<img src="{logo_uri}" style="width:48px;height:48px;border-radius:10px;border:1px solid #D4AF37;object-fit:cover;box-shadow:0 2px 10px rgba(212,175,55,0.2);" />' if logo_uri else ''
-    
-    st.markdown(f"""
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 22px;background:var(--bg-surface);border:1px solid var(--gold-border);border-radius:12px;margin-bottom:24px;box-shadow:var(--shadow-card);">
-        <div style="display:flex;align-items:center;gap:16px;">
-            {logo_html}
-            <div>
-                <div style="font-family:'Poppins','Cairo',sans-serif;font-size:20px;font-weight:800;color:var(--gold);letter-spacing:-0.01em;">
-                    {BRAND_NAME}
-                </div>
-                <div style="font-size:12px;color:var(--text-muted);">
-                    {subtitle or f"{BRAND_ROLE} &bull; {BRAND_OWNER}"}
-                </div>
-            </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:12px;">
-            <a href="{PORTFOLIO_URL}" target="_blank" style="display:inline-block;padding:7px 16px;border:1px solid var(--gold);border-radius:8px;color:var(--gold);text-decoration:none;font-size:12px;font-weight:600;transition:all 0.2s ease;">
-                {t('portfolio')}
-            </a>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    html = (
+        f'<div style="display:flex;justify-content:space-between;align-items:center;padding:16px 22px;background:var(--bg-surface);border:1px solid var(--gold-border);border-radius:12px;margin-bottom:24px;box-shadow:var(--shadow-card);">'
+        f'<div style="display:flex;align-items:center;gap:16px;">{logo_html}<div>'
+        f'<div style="font-family:\'Poppins\',\'Cairo\',sans-serif;font-size:20px;font-weight:800;color:var(--gold);letter-spacing:-0.01em;">{BRAND_NAME}</div>'
+        f'<div style="font-size:12px;color:var(--text-muted);">{subtitle or f"{BRAND_ROLE} &bull; {BRAND_OWNER}"}</div>'
+        f'</div></div>'
+        f'<div style="display:flex;align-items:center;gap:12px;"><a href="{PORTFOLIO_URL}" target="_blank" style="display:inline-block;padding:7px 16px;border:1px solid var(--gold);border-radius:8px;color:var(--gold);text-decoration:none;font-size:12px;font-weight:600;transition:all 0.2s ease;">{t("portfolio")}</a></div>'
+        f'</div>'
+    )
+    st.markdown(html, unsafe_allow_html=True)
 
 def render_footer():
     """Universal footer required on all pages."""
-    st.markdown(f"""
-    <div class="app-footer">
-        <div>{t('built_by')} <strong>{BRAND_OWNER}</strong></div>
-        <div style="margin-top:6px;font-size:11px;color:var(--text-muted);">
-            {t('portfolio')}: <a href="{PORTFOLIO_URL}" target="_blank">{PORTFOLIO_URL}</a> &nbsp;|&nbsp; Enterprise Technical Architecture
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    html = (
+        f'<div class="app-footer">'
+        f'<div>{t("built_by")} <strong>{BRAND_OWNER}</strong></div>'
+        f'<div style="margin-top:6px;font-size:11px;color:var(--text-muted);">'
+        f'{t("portfolio")}: <a href="{PORTFOLIO_URL}" target="_blank">{PORTFOLIO_URL}</a> &nbsp;|&nbsp; Enterprise Technical Architecture'
+        f'</div></div>'
+    )
+    st.markdown(html, unsafe_allow_html=True)
 
 def render_section_header(title: str, subtitle: str = ""):
     """Renders a section header banner."""
     sub_html = f'<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">{subtitle}</div>' if subtitle else ""
-    st.markdown(f"""
-    <div class="section-banner">
-        <div>
-            <div class="section-banner-title">{title}</div>
-            {sub_html}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    html = f'<div class="section-banner"><div><div class="section-banner-title">{title}</div>{sub_html}</div></div>'
+    st.markdown(html, unsafe_allow_html=True)
 
 def render_metric_card(label: str, value: str | int | float, sub: str = "", badge: str = ""):
     """Renders a gold-accented KPI card."""
     badge_html = f'<span class="badge-label badge-optimal" style="margin-left:8px;">{badge}</span>' if badge else ""
-    st.markdown(f"""
-    <div class="metric-card">
-        <div class="card-label">{label} {badge_html}</div>
-        <div class="card-value">{value}</div>
-        <div class="card-subtitle">{sub}</div>
-    </div>
-    """, unsafe_allow_html=True)
+    html = f'<div class="metric-card"><div class="card-label">{label} {badge_html}</div><div class="card-value">{value}</div><div class="card-subtitle">{sub}</div></div>'
+    st.markdown(html, unsafe_allow_html=True)
 
 def render_kpi_row(cards: list[tuple[str, str, str]]):
     """Renders a responsive row of KPI cards."""

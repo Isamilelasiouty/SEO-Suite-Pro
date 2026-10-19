@@ -6,9 +6,11 @@ Google Search Console Intelligence View for SEO Suite Pro:
 - Bilingual English & Arabic support
 - Dual Python & R Statistical Engine
 - 10-Class issue detector, Cannibalization resolver, and multi-format exports
+- Defensive checks on dataframes and safe unindented HTML rendering
 """
 
 import json
+import textwrap
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -67,7 +69,7 @@ def render_gsc_view():
     google_svg = get_google_logo_svg(28)
     gsc_svg = get_gsc_logo_svg(28)
     
-    st.markdown(f"""
+    upload_box_html = textwrap.dedent(f"""
     <div class="gsc-upload-zone">
         <div style="display:flex;justify-content:center;align-items:center;gap:12px;margin-bottom:8px;">
             {google_svg}
@@ -80,7 +82,8 @@ def render_gsc_view():
             {t('gsc_upload_box_desc')}
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """).strip()
+    st.markdown(upload_box_html, unsafe_allow_html=True)
     
     col_upload, col_meta = st.columns([2.5, 1])
     
@@ -167,7 +170,7 @@ def render_gsc_view():
     ])
     
     # ── Statistical Engine Status Banner ────────────────────────────
-    st.markdown(f"""
+    engine_banner_html = textwrap.dedent(f"""
     <div style="background:var(--bg-surface);border:1px solid var(--gold-border);border-radius:10px;padding:12px 20px;margin:18px 0;display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow-card);">
         <div>
             <span style="font-weight:700;color:var(--gold);">Statistical Engine:</span>
@@ -180,7 +183,8 @@ def render_gsc_view():
             </span>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """).strip()
+    st.markdown(engine_banner_html, unsafe_allow_html=True)
     
     # ── Actions & Exports ───────────────────────────────────────────
     col_save, col_exports = st.columns([1, 2])
@@ -239,7 +243,7 @@ def render_gsc_view():
         
         for idx, item in enumerate(filtered_issues, 1):
             sev_class = "badge-critical" if item["severity"] in ("Critical", "High") else "badge-warning" if item["severity"] in ("Warning", "Medium") else "badge-optimal"
-            st.markdown(f"""
+            card_html = textwrap.dedent(f"""
             <div class="glass-card" style="margin-bottom:14px;padding:18px 22px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
                     <div>
@@ -255,22 +259,24 @@ def render_gsc_view():
                     <strong>Prescribed Technical Fix:</strong> {item['fix']}
                 </div>
             </div>
-            """, unsafe_allow_html=True)
+            """).strip()
+            st.markdown(card_html, unsafe_allow_html=True)
             
     with tab_cannibalization:
         render_section_header(t("tab_cannibalization"))
-        st.markdown("""
+        desc_cann = textwrap.dedent("""
         <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">
             The algorithmic solver determines the Primary URL using weighted scoring: Clicks (40%) + Impressions (30%) + Position (20%) + CTR (10%).
             Inspect competing pages and apply prescribed technical actions (301 redirect, canonicalize, merge, or differentiate intent).
         </div>
-        """, unsafe_allow_html=True)
+        """).strip()
+        st.markdown(desc_cann, unsafe_allow_html=True)
         
         if not cannibalization:
             st.success("No keyword cannibalization detected in this dataset.")
         else:
             for c in cannibalization:
-                st.markdown(f"""
+                cann_card = textwrap.dedent(f"""
                 <div class="glass-card" style="margin-bottom:16px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
                         <div style="font-size:16px;font-weight:700;color:var(--gold);">Query: "{c['query']}"</div>
@@ -292,21 +298,25 @@ def render_gsc_view():
                         <strong style="color:var(--gold);">Action Protocol:</strong> {c['recommended_action']}
                     </div>
                 </div>
-                """, unsafe_allow_html=True)
+                """).strip()
+                st.markdown(cann_card, unsafe_allow_html=True)
                 
     with tab_clusters:
         render_section_header(t("tab_clusters"))
-        col_cl1, col_cl2 = st.columns([1, 1.2])
-        
-        with col_cl1:
+        if not df_processed.empty and "cluster_label" in df_processed.columns:
+            col_cl1, col_cl2 = st.columns([1, 1.2])
             cluster_counts = df_processed["cluster_label"].value_counts().reset_index()
             cluster_counts.columns = ["Semantic Intent Cluster", "Query Count"]
-            fig_clust = px.pie(cluster_counts, names="Semantic Intent Cluster", values="Query Count", hole=0.5, color_discrete_sequence=["#D4AF37", "#B8962E", "#E5E7EB", "#9CA3AF", "#4B5563"])
-            st.plotly_chart(style_plotly_figure(fig_clust, "Query Intent Distribution", height=320), use_container_width=True)
             
-        with col_cl2:
-            st.markdown("#### Intent Cluster Breakdown")
-            st.dataframe(cluster_counts, use_container_width=True)
+            with col_cl1:
+                if not cluster_counts.empty:
+                    fig_clust = px.pie(cluster_counts, names="Semantic Intent Cluster", values="Query Count", hole=0.5, color_discrete_sequence=["#D4AF37", "#B8962E", "#E5E7EB", "#9CA3AF", "#4B5563"])
+                    st.plotly_chart(style_plotly_figure(fig_clust, "Query Intent Distribution", height=320), use_container_width=True)
+            with col_cl2:
+                st.markdown("#### Intent Cluster Breakdown")
+                st.dataframe(cluster_counts, use_container_width=True)
+        else:
+            st.info("No query clusters available.")
             
     with tab_stats:
         render_section_header(t("tab_stats"))
@@ -339,8 +349,18 @@ def render_gsc_view():
             st.info(sig.get("reason", "Device hypothesis test skipped."))
             
         # Scatter Plot CTR vs Position
-        fig_scatter = px.scatter(df_processed, x="position", y="ctr", size="impressions", hover_data=["query", "page"], title="CTR vs SERP Position (Bubble Size = Impressions)", color_discrete_sequence=["#D4AF37"])
-        st.plotly_chart(style_plotly_figure(fig_scatter, "CTR vs Position Distribution Curve", height=380), use_container_width=True)
+        if not df_processed.empty and "position" in df_processed.columns and "ctr" in df_processed.columns:
+            has_pos_impressions = "impressions" in df_processed.columns and (df_processed["impressions"] > 0).any()
+            fig_scatter = px.scatter(
+                df_processed,
+                x="position",
+                y="ctr",
+                size="impressions" if has_pos_impressions else None,
+                hover_data=[c for c in ["query", "page"] if c in df_processed.columns],
+                title="CTR vs SERP Position",
+                color_discrete_sequence=["#D4AF37"]
+            )
+            st.plotly_chart(style_plotly_figure(fig_scatter, "CTR vs Position Distribution Curve", height=380), use_container_width=True)
         
     with tab_raw:
         render_section_header(t("tab_raw"))

@@ -4,6 +4,7 @@ Strict gold, black, and white design with logo and bcrypt authentication.
 Bilingual support (English & Arabic) and Light/Dark mode compatible.
 """
 
+import textwrap
 import streamlit as st
 from core.auth import login_user
 from core.config import BRAND_NAME, BRAND_OWNER
@@ -21,14 +22,16 @@ def render_auth_view():
     
     col_l, col_center, col_r = st.columns([1, 1.8, 1])
     with col_center:
-        st.markdown(f"""
+        logo_tag = f'<img src="{logo_uri}" style="width:64px;height:64px;border-radius:12px;border:1px solid var(--gold);margin-bottom:12px;object-fit:cover;box-shadow:0 2px 10px var(--gold-tint);" />' if logo_uri else ''
+        header_card = textwrap.dedent(f"""
         <div style="text-align:center;padding:24px 20px 16px;background:var(--bg-surface);border:1px solid var(--gold-border);border-radius:12px;margin-bottom:20px;box-shadow:var(--shadow-card);">
-            {'<img src="' + logo_uri + '" style="width:64px;height:64px;border-radius:12px;border:1px solid var(--gold);margin-bottom:12px;object-fit:cover;box-shadow:0 2px 10px var(--gold-tint);" />' if logo_uri else ''}
+            {logo_tag}
             <div style="font-family:'Poppins','Cairo',sans-serif;font-size:24px;font-weight:800;color:var(--gold);">{BRAND_NAME}</div>
             <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">{t('auth_welcome_sub')}</div>
             <div style="font-size:11px;color:var(--gold);margin-top:4px;">{t('built_by')} {BRAND_OWNER}</div>
         </div>
-        """, unsafe_allow_html=True)
+        """).strip()
+        st.markdown(header_card, unsafe_allow_html=True)
         
         tab_login, tab_register = st.tabs([t("auth_signin_tab"), t("auth_register_tab")])
         

@@ -6,8 +6,10 @@ Google Gemini AI Assistant View for SEO Suite Pro:
 - Keyword cannibalization differentiation and content briefs
 - Rate limit (429) and invalid key handling
 - Bilingual English & Arabic with dynamic theme variables
+- Safe unindented HTML rendering
 """
 
+import textwrap
 import streamlit as st
 from core.auth import get_current_user
 from core.database import update_user_api_key
@@ -94,14 +96,15 @@ def render_gemini_view():
         
     # ── 2. AI Capabilities Workspace ────────────────────────────────
     gem_svg = get_gemini_logo_svg(22)
-    st.markdown(f"""
+    gem_header = textwrap.dedent(f"""
     <div style="display:flex;align-items:center;gap:10px;margin:20px 0 10px;">
         {gem_svg}
         <span style="font-family:'Poppins','Cairo',sans-serif;font-size:16px;font-weight:700;color:var(--gold);">
             {'Google Gemini 2.5 Flash / Pro Intelligence Workspace' if not is_ar else 'مساحة العمل الاستراتيجية بنموذج Google Gemini'}
         </span>
     </div>
-    """, unsafe_allow_html=True)
+    """).strip()
+    st.markdown(gem_header, unsafe_allow_html=True)
     
     tab_plan, tab_rewriter, tab_cannibal = st.tabs([
         t("ai_tab_plan"),
@@ -114,11 +117,7 @@ def render_gemini_view():
     onpage_data = st.session_state.get("active_onpage_audit", {})
     
     with tab_plan:
-        st.markdown(f"""
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
-            {t('ai_plan_desc')}
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(f'<div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">{t("ai_plan_desc")}</div>', unsafe_allow_html=True)
         
         if not gsc_data and not onpage_data:
             warn = "قم بإجراء فحص داخلي أو تحليل سيرش كونسول أولاً لتغذية خطة العمل بالبيانات." if is_ar else "Run an On-Page Audit or Search Console Analysis first to generate data for the action plan."
@@ -133,11 +132,12 @@ def render_gemini_view():
                     
             saved_plan = st.session_state.get("gemini_saved_plan")
             if saved_plan:
-                st.markdown(f"""
+                plan_html = textwrap.dedent(f"""
                 <div class="glass-card" style="padding:24px;border-left:4px solid var(--gold);">
                     {saved_plan}
                 </div>
-                """, unsafe_allow_html=True)
+                """).strip()
+                st.markdown(plan_html, unsafe_allow_html=True)
                 
     with tab_rewriter:
         st.markdown("#### High-Converting Title & Meta Description Generator" if not is_ar else "#### مولد عناوين وميتا ديسكريبشن جاذبة للزيارات")
@@ -156,11 +156,12 @@ def render_gemini_view():
             else:
                 with st.spinner("Generating CTR-optimized variations..."):
                     rewrites = generate_title_meta_rewrites(active_key, q_in, t_in, m_in, intent_in)
-                    st.markdown(f"""
+                    rewrites_html = textwrap.dedent(f"""
                     <div class="glass-card" style="padding:20px;border-left:3px solid var(--gold);margin-top:16px;">
                         {rewrites}
                     </div>
-                    """, unsafe_allow_html=True)
+                    """).strip()
+                    st.markdown(rewrites_html, unsafe_allow_html=True)
                     
     with tab_cannibal:
         st.markdown("#### Intent Disambiguation & Cannibalization Brief" if not is_ar else "#### بريف فك التنازع بين صفحات الموقع")
@@ -175,10 +176,11 @@ def render_gemini_view():
                 sec_list = [s.strip() for s in c_sec.splitlines() if s.strip()]
                 with st.spinner("Formulating technical disambiguation protocol..."):
                     brief = generate_cannibalization_brief(active_key, c_query, c_prim, sec_list)
-                    st.markdown(f"""
+                    brief_html = textwrap.dedent(f"""
                     <div class="glass-card" style="padding:20px;border-left:3px solid var(--gold);margin-top:16px;">
                         {brief}
                     </div>
-                    """, unsafe_allow_html=True)
+                    """).strip()
+                    st.markdown(brief_html, unsafe_allow_html=True)
                     
     render_footer()

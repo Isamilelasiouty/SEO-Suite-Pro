@@ -137,7 +137,6 @@ def parse_gsc_csv(csv_bytes_or_str: bytes | str) -> pd.DataFrame:
             return 0.0
     df["ctr"] = df["ctr"].apply(clean_ctr).round(4)
     df["position"] = pd.to_numeric(df["position"], errors="coerce").fillna(50.0).round(1)
-    
     df["query"] = df["query"].astype(str).str.strip()
     df["page"] = df["page"].astype(str).str.strip()
     
@@ -146,6 +145,53 @@ def parse_gsc_csv(csv_bytes_or_str: bytes | str) -> pd.DataFrame:
     if "date" not in df.columns: df["date"] = ""
     
     return df
+
+def parse_gsc_zip(zip_bytes: bytes) -> tuple[pd.DataFrame, list[str]]:
+    """
+    Parses Google Search Console ZIP export archives containing:
+    Queries.csv, Pages.csv, Countries.csv, Devices.csv, Dates.csv.
+    """
+    import io
+    import zipfile
+    
+    extracted_files = []
+    queries_df = None
+    pages_df = None
+    devices_df = None
+    
+    with zipfile.ZipFile(io.BytesIO(zip_bytes)) as z:
+        extracted_files = z.namelist()
+        for fname in extracted_files:
+            low = fname.lower()
+            if "quer" in low and low.endswith(".csv"):
+                with z.open(fname) as f:
+                    queries_df = parse_gsc_csv(f.read())
+            elif "page" in low and low.endswith(".csv"):
+                with z.open(fname) as f:
+                    pages_df = parse_gsc_csv(f.read())
+            elif "device" in low and low.endswith(".csv"):
+                with z.open(fname) as f:
+                    devices_df = parse_gsc_csv(f.read())
+                    
+    # Priority: if queries_df exists, use it
+    if queries_df is not None and not queries_df.empty:
+        # If pages_df has sample top pages, enrich queries_df if needed
+        if pages_df is not None and not pages_df.empty and (queries_df["page"] == "https://example.com/unspecified-page").all():
+            top_page = pages_df["page"].iloc[0] if "page" in pages_df.columns else "https://example.com"
+            queries_df["page"] = top_page
+        return queries_df, extracted_files
+        
+    if pages_df is not None and not pages_df.empty:
+        return pages_df, extracted_files
+        
+    # If no standard files found, try parsing the first CSV in the zip
+    with zipfile.ZipFile(io.BytesIO(zip_bytes)) as z:
+        for fname in z.namelist():
+            if fname.lower().endswith(".csv"):
+                with z.open(fname) as f:
+                    return parse_gsc_csv(f.read()), extracted_files
+                    
+    return pd.DataFrame(), extracted_files
 
 def cluster_queries_tfidf(df: pd.DataFrame, n_clusters: int | None = None) -> tuple[pd.DataFrame, dict]:
     """

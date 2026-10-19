@@ -2,6 +2,7 @@
 Contact & Brand View for SEO Suite Pro:
 Official contact information, portfolio links, and professional background for Ismail El Asiouty.
 STRICT: Zero emojis, luxury gold, black, and white design system.
+Bilingual support (English & Arabic) and Light/Dark mode compatible.
 """
 
 import streamlit as st
@@ -14,53 +15,72 @@ from core.config import (
     TEL_URL,
     WHATSAPP_URL,
 )
+from core.i18n import get_current_lang, t
 from views.components import get_logo_base64, render_footer, render_header
 
 def render_contact_view():
-    render_header(subtitle="Direct Architectural Consultation & Inquiries")
+    lang = get_current_lang()
+    is_ar = (lang == "ar")
+    
+    render_header(subtitle=t("contact_header"))
     logo_uri = get_logo_base64()
     
+    name_display = t("contact_spec_title") if is_ar else BRAND_OWNER
+    role_display = t("contact_spec_role") if is_ar else BRAND_ROLE
+    desc_display = t("contact_spec_desc")
+    
     st.markdown(f"""
-    <div class="glass-card" style="text-align:center;padding:40px 30px;max-width:820px;margin:20px auto;">
-        {'<img src="' + logo_uri + '" style="width:72px;height:72px;border-radius:14px;border:1.5px solid #D4AF37;margin-bottom:16px;object-fit:cover;" />' if logo_uri else ''}
-        <div style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#D4AF37;letter-spacing:-0.01em;">
-            {BRAND_OWNER}
+    <div class="glass-card" style="text-align:center;padding:40px 30px;max-width:840px;margin:20px auto;">
+        {'<img src="' + logo_uri + '" style="width:76px;height:76px;border-radius:14px;border:1.5px solid var(--gold);margin-bottom:16px;object-fit:cover;box-shadow:0 4px 16px var(--gold-tint);" />' if logo_uri else ''}
+        <div style="font-family:'Poppins','Cairo',sans-serif;font-size:30px;font-weight:900;color:var(--gold);letter-spacing:-0.01em;">
+            {name_display}
         </div>
-        <div style="font-size:14px;color:#F5F5F5;font-weight:600;margin-top:6px;">
-            {BRAND_ROLE}
+        <div style="font-size:14px;color:var(--text-soft);font-weight:600;margin-top:6px;">
+            {role_display}
         </div>
-        <div style="font-size:13px;color:#A0A0A0;max-width:620px;margin:12px auto 28px;line-height:1.7;">
-            Specializing in enterprise technical SEO architectures, full-stack data intelligence tools, 
-            Google Search Console statistical modeling, and programmatic search growth engines.
+        <div style="font-size:13px;color:var(--text-muted);max-width:640px;margin:12px auto 28px;line-height:1.7;">
+            {desc_display}
         </div>
         
         <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:32px;">
-            <a href="{LINKEDIN_URL}" target="_blank" style="display:inline-block;padding:10px 22px;border:1px solid #D4AF37;border-radius:6px;background:rgba(212,175,55,0.1);color:#D4AF37;text-decoration:none;font-size:13px;font-weight:700;transition:all 0.2s ease;">
-                LinkedIn Profile
+            <a href="{LINKEDIN_URL}" target="_blank" style="display:inline-block;padding:10px 22px;border:1px solid var(--gold);border-radius:8px;background:rgba(212,175,55,0.1);color:var(--gold);text-decoration:none;font-size:13px;font-weight:700;transition:all 0.2s ease;">
+                {t('contact_linkedin')}
             </a>
-            <a href="{WHATSAPP_URL}" target="_blank" style="display:inline-block;padding:10px 22px;border:1px solid #D4AF37;border-radius:6px;background:rgba(212,175,55,0.1);color:#D4AF37;text-decoration:none;font-size:13px;font-weight:700;transition:all 0.2s ease;">
-                WhatsApp: {PHONE_NUMBER}
+            <a href="{WHATSAPP_URL}" target="_blank" style="display:inline-block;padding:10px 22px;border:1px solid var(--gold);border-radius:8px;background:rgba(212,175,55,0.1);color:var(--gold);text-decoration:none;font-size:13px;font-weight:700;transition:all 0.2s ease;">
+                {t('contact_whatsapp')}: {PHONE_NUMBER}
             </a>
-            <a href="{TEL_URL}" style="display:inline-block;padding:10px 22px;border:1px solid #D4AF37;border-radius:6px;background:rgba(212,175,55,0.1);color:#D4AF37;text-decoration:none;font-size:13px;font-weight:700;transition:all 0.2s ease;">
-                Direct Call: {PHONE_NUMBER}
+            <a href="{TEL_URL}" style="display:inline-block;padding:10px 22px;border:1px solid var(--gold);border-radius:8px;background:rgba(212,175,55,0.1);color:var(--gold);text-decoration:none;font-size:13px;font-weight:700;transition:all 0.2s ease;">
+                {t('contact_call')}: {PHONE_NUMBER}
             </a>
-            <a href="{PORTFOLIO_URL}" target="_blank" style="display:inline-block;padding:10px 22px;border:1px solid #D4AF37;border-radius:6px;background:#D4AF37;color:#000000;text-decoration:none;font-size:13px;font-weight:700;transition:all 0.2s ease;">
-                Official Portfolio Website
+            <a href="{PORTFOLIO_URL}" target="_blank" style="display:inline-block;padding:10px 22px;border:1px solid var(--gold);border-radius:8px;background:var(--gold);color:#000000;text-decoration:none;font-size:13px;font-weight:700;transition:all 0.2s ease;">
+                {t('contact_portfolio')}
             </a>
         </div>
         
-        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:16px;text-align:left;border-top:1px solid rgba(212,175,55,0.2);padding-top:24px;">
-            <div style="background:#141414;padding:16px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);">
-                <div style="color:#D4AF37;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Technical SEO Audits</div>
-                <div style="color:#A0A0A0;font-size:11px;line-height:1.5;">DOM hierarchy, schema markup engineering, crawl budget preservation, and indexation defense.</div>
+        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:16px;text-align:{'right' if is_ar else 'left'};border-top:1px solid var(--gold-border);padding-top:24px;">
+            <div style="background:var(--bg-elevated);padding:18px;border-radius:10px;border:1px solid var(--gold-border);">
+                <div style="color:var(--gold);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">
+                    {'Technical SEO Audits' if not is_ar else 'معماريات السيو التقني'}
+                </div>
+                <div style="color:var(--text-muted);font-size:11px;line-height:1.6;">
+                    {'DOM hierarchy, schema markup engineering, crawl budget preservation, and indexation defense.' if not is_ar else 'هندسة الـ DOM، وبناء السكيما المنظمة، وحماية ميزانية الزحف، والتحكم الصارم في الفهرسة.'}
+                </div>
             </div>
-            <div style="background:#141414;padding:16px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);">
-                <div style="color:#D4AF37;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Data Science & R Analytics</div>
-                <div style="color:#A0A0A0;font-size:11px;line-height:1.5;">Time-series anomaly detection, STL seasonality checks, and query cannibalization solvers.</div>
+            <div style="background:var(--bg-elevated);padding:18px;border-radius:10px;border:1px solid var(--gold-border);">
+                <div style="color:var(--gold);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">
+                    {'Data Science & R Analytics' if not is_ar else 'علم البيانات والتحليل بلغة R'}
+                </div>
+                <div style="color:var(--text-muted);font-size:11px;line-height:1.6;">
+                    {'Time-series anomaly detection, STL seasonality checks, and query cannibalization solvers.' if not is_ar else 'كشف الشواذ الإحصائية في السيرش كونسول، ونمذجة الموسمية، وفك تداخل الكلمات المفتاحية.'}
+                </div>
             </div>
-            <div style="background:#141414;padding:16px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);">
-                <div style="color:#D4AF37;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Custom Python Tooling</div>
-                <div style="color:#A0A0A0;font-size:11px;line-height:1.5;">Scalable Streamlit platforms, secure multi-tenant architectures, and AI agent integration.</div>
+            <div style="background:var(--bg-elevated);padding:18px;border-radius:10px;border:1px solid var(--gold-border);">
+                <div style="color:var(--gold);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">
+                    {'Custom Python Tooling' if not is_ar else 'أدوات برمجية متقدمة بـ Python'}
+                </div>
+                <div style="color:var(--text-muted);font-size:11px;line-height:1.6;">
+                    {'Scalable Streamlit platforms, secure multi-tenant architectures, and AI agent integration.' if not is_ar else 'تطوير منصات Streamlit احترافية، وعزل قواعد بيانات المستخدمين، وربط عملاء الذكاء الاصطناعي.'}
+                </div>
             </div>
         </div>
     </div>

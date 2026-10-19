@@ -5,12 +5,15 @@ On-Page Technical SEO Audit View for SEO Suite Pro:
 - Robots.txt and server security headers evaluation
 - Export to CSV, Excel (.xlsx), and executive PDF
 - One-click persistence to user's private history
+- Fully bilingual (English & Arabic) with dynamic Light & Dark mode support
 """
 
 import pandas as pd
+import plotly.express as px
 import streamlit as st
 from core.auth import get_current_user
 from core.database import save_analysis
+from core.i18n import get_current_lang, t
 from core.security import validate_and_normalize_url
 from services.crawler import crawl_urls_concurrently, discover_sitemap_urls, fetch_url, parse_xml_sitemap
 from services.onpage_analyzer import analyze_onpage
@@ -25,23 +28,30 @@ from views.components import (
     render_section_header,
     style_plotly_figure,
 )
-import plotly.express as px
 
 def render_onpage_view():
-    render_header(subtitle="On-Page Technical Audit & DOM Intelligence")
+    lang = get_current_lang()
+    is_ar = (lang == "ar")
+    
+    render_header(subtitle=t("onpage_header"))
     user = get_current_user()
     
     col_input, col_opts = st.columns([3, 1])
     with col_input:
-        target_input = st.text_input("Target Website URL", placeholder="https://example.com", help="Include http:// or https://")
+        target_input = st.text_input(
+            t("onpage_target_label"),
+            placeholder="https://example.com",
+            help="Include http:// or https://"
+        )
     with col_opts:
-        crawl_mode = st.selectbox("Audit Scope", ["Single Page", "Sitemap Crawl (Multi-Page)"])
+        scope_options = [t("onpage_scope_single"), t("onpage_scope_sitemap")]
+        crawl_mode = st.selectbox(t("onpage_scope_label"), scope_options)
         
     max_pages = 25
-    if crawl_mode == "Sitemap Crawl (Multi-Page)":
-        max_pages = st.slider("Maximum Pages to Crawl", min_value=5, max_value=150, value=25, step=5)
+    if crawl_mode == t("onpage_scope_sitemap"):
+        max_pages = st.slider(t("onpage_max_pages"), min_value=5, max_value=150, value=25, step=5)
         
-    start_btn = st.button("Execute Technical Audit", type="primary", use_container_width=True)
+    start_btn = st.button(t("onpage_run_btn"), type="primary", use_container_width=True)
     
     if start_btn and target_input:
         is_valid, norm_url, err_msg = validate_and_normalize_url(target_input)
@@ -53,7 +63,7 @@ def render_onpage_view():
             urls_to_crawl = [norm_url]
             sitemap_found = []
             
-            if crawl_mode == "Sitemap Crawl (Multi-Page)":
+            if crawl_mode == t("onpage_scope_sitemap"):
                 sitemaps = discover_sitemap_urls(norm_url)
                 if sitemaps:
                     sitemap_found = sitemaps
@@ -62,10 +72,12 @@ def render_onpage_view():
                         urls_to_crawl = [p["url"] for p in parsed_pages[:max_pages]]
                         
             # Execute Crawl
-            prog_bar = st.progress(0, text="Fetching and parsing DOM structures...")
+            prog_text = "جاري الزحف وفحص شجرة الـ DOM..." if is_ar else "Fetching and parsing DOM structures..."
+            prog_bar = st.progress(0, text=prog_text)
             
             def update_progress(curr, total, page_url):
-                prog_bar.progress(curr / total, text=f"Auditing page {curr}/{total}: {page_url[:60]}")
+                lbl = f"فحص الصفحة {curr}/{total}: {page_url[:60]}" if is_ar else f"Auditing page {curr}/{total}: {page_url[:60]}"
+                prog_bar.progress(curr / total, text=lbl)
                 
             crawl_data = crawl_urls_concurrently(urls_to_crawl, progress_callback=update_progress)
             prog_bar.empty()
@@ -98,12 +110,14 @@ def render_onpage_view():
                 "server_headers": server_res,
                 "sitemaps": sitemap_found
             }
-            st.success(f"Audit completed successfully for {len(page_audits)} pages.")
+            msg = f"تم الفحص بنجاح لـ {len(page_audits)} صفحة." if is_ar else f"Audit completed successfully for {len(page_audits)} pages."
+            st.success(msg)
             
     # Display Results if Present
     audit_data = st.session_state.get("active_onpage_audit")
     if not audit_data:
-        st.info("Enter a target URL above and click 'Execute Technical Audit' to generate a full DOM report.")
+        info_txt = "أدخل رابط الموقع بالأعلى ثم اضغط 'تنفيذ الفحص الفني' لبدء التحليل الشامل." if is_ar else "Enter a target URL above and click 'Execute Technical Audit' to generate a full DOM report."
+        st.info(info_txt)
         render_footer()
         return
         
@@ -119,16 +133,16 @@ def render_onpage_view():
     missing_h1 = sum(1 for p in valid_pages if p["headings"]["h1_status"] == "Missing")
     
     render_kpi_row([
-        ("On-Page Health Score", f"{avg_score} / 100", "Composite weighted score"),
-        ("Pages Scanned", total_scanned, "DOM responses analyzed"),
-        ("Missing Titles", missing_title, "Critical SERP factor"),
-        ("Missing H1 Headings", missing_h1, "Structure deficiency"),
+        (t("kpi_health_score"), f"{avg_score} / 100", "Composite weighted score"),
+        (t("kpi_pages_scanned"), total_scanned, "DOM responses analyzed"),
+        (t("kpi_missing_titles"), missing_title, "Critical SERP factor"),
+        (t("kpi_missing_h1"), missing_h1, "Structure deficiency"),
     ])
     
     # Save to user history
     col_save, col_exp = st.columns([1, 2])
     with col_save:
-        if user and st.button("Save Audit to My History", key="btn_save_onpage", use_container_width=True):
+        if user and st.button(t("save_to_history"), key="btn_save_onpage", use_container_width=True):
             summary = {
                 "avg_health_score": avg_score,
                 "pages_scanned": total_scanned,
@@ -137,11 +151,10 @@ def render_onpage_view():
                 "missing_h1": missing_h1
             }
             save_analysis(user["id"], "onpage", target_url, summary, audit_data)
-            st.success("Audit saved to your private history.")
+            st.success(t("saved_success"))
             
     # Export Options
     with col_exp:
-        # Build Export DataFrames
         rows_summary = []
         for i, p in enumerate(valid_pages, 1):
             rows_summary.append({
@@ -164,10 +177,10 @@ def render_onpage_view():
         c1, c2, c3 = st.columns(3)
         with c1:
             csv_bytes = generate_csv_bytes(df_export)
-            st.download_button("Export CSV", data=csv_bytes, file_name="onpage_audit.csv", mime="text/csv", use_container_width=True)
+            st.download_button(t("export_csv"), data=csv_bytes, file_name="onpage_audit.csv", mime="text/csv", use_container_width=True)
         with c2:
             excel_bytes = generate_excel_bytes({"On-Page Summary": df_export})
-            st.download_button("Export Excel", data=excel_bytes, file_name="onpage_audit.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
+            st.download_button(t("export_excel"), data=excel_bytes, file_name="onpage_audit.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
         with c3:
             kpis_pdf = [
                 ("Health Score", f"{avg_score}/100"),
@@ -188,22 +201,22 @@ def render_onpage_view():
                         "fix": "Review on-page optimization rules."
                     })
             pdf_bytes = generate_pdf_report("On-Page Technical Audit", target_url, kpis_pdf, issues_pdf)
-            st.download_button("Export PDF", data=pdf_bytes, file_name="onpage_audit.pdf", mime="application/pdf", use_container_width=True)
+            st.download_button(t("export_pdf"), data=pdf_bytes, file_name="onpage_audit.pdf", mime="application/pdf", use_container_width=True)
             
     # Tabs for Detailed Breakdown
     tab_pages, tab_content, tab_schema, tab_technical, tab_links = st.tabs([
-        "Page Summary Table",
-        "Content & Readability",
-        "Schema Validation",
-        "Robots & Server Security",
-        "Links & Media Audit"
+        "Page Summary Table" if not is_ar else "جدول ملخص الصفحات",
+        "Content & Readability" if not is_ar else "المحتوى وسهولة القراءة",
+        "Schema Validation" if not is_ar else "فحص السكيما المنظمة",
+        "Robots & Server Security" if not is_ar else "ملف Robots وترويسات السيرفر",
+        "Links & Media Audit" if not is_ar else "الروابط وملفات الوسائط"
     ])
     
     with tab_pages:
         st.dataframe(df_export, use_container_width=True, height=450)
         
     with tab_content:
-        render_section_header("Content Quality & Readability Metrics")
+        render_section_header("Content Quality & Readability Metrics" if not is_ar else "جودة المحتوى ومقاييس سهولة القراءة")
         col_r1, col_r2 = st.columns(2)
         with col_r1:
             readability_df = pd.DataFrame([{
@@ -219,7 +232,7 @@ def render_onpage_view():
             st.plotly_chart(style_plotly_figure(fig, "Readability Score Distribution"), use_container_width=True)
             
     with tab_schema:
-        render_section_header("Structured Data & Schema.org Audit")
+        render_section_header("Structured Data & Schema.org Audit" if not is_ar else "البيانات المنظمة وفحص Schema.org")
         schema_rows = []
         for p in valid_pages:
             schema_rows.append({
@@ -232,7 +245,7 @@ def render_onpage_view():
         st.dataframe(pd.DataFrame(schema_rows), use_container_width=True)
         
     with tab_technical:
-        render_section_header("Robots.txt Directives & Server Headers")
+        render_section_header("Robots.txt Directives & Server Headers" if not is_ar else "تعليمات Robots.txt وترويسات الأمان")
         col_t1, col_t2 = st.columns(2)
         with col_t1:
             st.markdown("#### Robots.txt Analysis")
@@ -250,7 +263,7 @@ def render_onpage_view():
             st.dataframe(pd.DataFrame(audit_data["server_headers"]), use_container_width=True)
             
     with tab_links:
-        render_section_header("Internal/External Links & Media Alt Text")
+        render_section_header("Internal/External Links & Media Alt Text" if not is_ar else "الروابط الداخلية والخارجية ونصوص الصور")
         media_rows = []
         for p in valid_pages:
             media_rows.append({

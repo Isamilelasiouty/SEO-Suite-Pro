@@ -5,11 +5,13 @@ Google Gemini AI Assistant View for SEO Suite Pro:
 - High-CTR Title and Meta Description rewriter
 - Keyword cannibalization differentiation and content briefs
 - Rate limit (429) and invalid key handling
+- Bilingual English & Arabic with dynamic theme variables
 """
 
 import streamlit as st
 from core.auth import get_current_user
 from core.database import update_user_api_key
+from core.i18n import get_current_lang, t
 from core.security import decrypt_secret, encrypt_secret
 from services.gemini_service import (
     generate_cannibalization_brief,
@@ -17,14 +19,22 @@ from services.gemini_service import (
     generate_title_meta_rewrites,
     test_gemini_key,
 )
-from views.components import render_footer, render_header, render_section_header
+from views.components import (
+    get_gemini_logo_svg,
+    render_footer,
+    render_header,
+    render_section_header,
+)
 
 def render_gemini_view():
-    render_header(subtitle="Google Gemini AI Strategic Assistant")
+    lang = get_current_lang()
+    is_ar = (lang == "ar")
+    
+    render_header(subtitle=t("ai_header"))
     user = get_current_user()
     
     # ── 1. API Key Configuration & Security ─────────────────────────
-    render_section_header("API Key Management", "Enter your Google AI Studio Gemini API Key (Free Tier)")
+    render_section_header("API Key Management" if not is_ar else "إدارة مفتاح الذكاء الاصطناعي", t("ai_key_label"))
     
     # Retrieve existing key from session or decrypted profile
     current_key = st.session_state.get("gemini_api_key", "")
@@ -37,30 +47,32 @@ def render_gemini_view():
     with col_k1:
         masked_val = ("•" * 28 + current_key[-4:]) if current_key else ""
         key_input = st.text_input(
-            "Gemini API Key",
+            t("ai_key_label"),
             value=masked_val if current_key else "",
             type="password",
-            placeholder="AIzaSy...",
+            placeholder=t("ai_key_placeholder"),
             help="Get your free API key at https://aistudio.google.com/app/apikey"
         )
     with col_k2:
         st.markdown("<div style='height:28px;'></div>", unsafe_allow_html=True)
         col_btn1, col_btn2 = st.columns(2)
         with col_btn1:
-            save_key_btn = st.button("Save Key", type="primary", use_container_width=True)
+            save_key_btn = st.button(t("ai_save_key"), type="primary", use_container_width=True)
         with col_btn2:
-            clear_key_btn = st.button("Clear", use_container_width=True)
+            clear_key_btn = st.button(t("ai_clear_key"), use_container_width=True)
             
     if clear_key_btn:
         st.session_state.pop("gemini_api_key", None)
         if user:
             update_user_api_key(user["id"], "")
-        st.success("API key cleared from session and profile.")
+        msg = "تم حذف مفتاح API من الجلسة والملف الشخصي." if is_ar else "API key cleared from session and profile."
+        st.success(msg)
         st.rerun()
         
     if save_key_btn:
         if not key_input or key_input.startswith("••••"):
-            st.warning("Please enter a new API key string.")
+            warn = "يرجى كتابة أو لصق مفتاح API صحيح." if is_ar else "Please enter a new API key string."
+            st.warning(warn)
         else:
             with st.spinner("Validating API key with Google AI Studio..."):
                 is_valid, msg = test_gemini_key(key_input)
@@ -69,24 +81,32 @@ def render_gemini_view():
                     if user:
                         enc = encrypt_secret(key_input.strip())
                         update_user_api_key(user["id"], enc)
-                    st.success("Gemini API key validated and securely stored in encrypted profile.")
+                    st.success(t("ai_saved_success"))
                     st.rerun()
                 else:
                     st.error(msg)
                     
     active_key = st.session_state.get("gemini_api_key", "")
     if not active_key:
-        st.info("AI features are optional. All technical crawling and Search Console analysis functions remain 100% active without an API key.")
+        st.info(t("ai_no_key_notice"))
         render_footer()
         return
         
     # ── 2. AI Capabilities Workspace ────────────────────────────────
-    render_section_header("AI Strategy Workflows", "Generate plain-language recommendations and prioritized roadmaps")
+    gem_svg = get_gemini_logo_svg(22)
+    st.markdown(f"""
+    <div style="display:flex;align-items:center;gap:10px;margin:20px 0 10px;">
+        {gem_svg}
+        <span style="font-family:'Poppins','Cairo',sans-serif;font-size:16px;font-weight:700;color:var(--gold);">
+            {'Google Gemini 2.5 Flash / Pro Intelligence Workspace' if not is_ar else 'مساحة العمل الاستراتيجية بنموذج Google Gemini'}
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
     
     tab_plan, tab_rewriter, tab_cannibal = st.tabs([
-        "Executive 30-Day Action Plan",
-        "High-CTR Title & Snippet Rewriter",
-        "Cannibalization Differentiation Brief"
+        t("ai_tab_plan"),
+        t("ai_tab_rewriter"),
+        t("ai_tab_cannibal")
     ])
     
     # Check active data
@@ -94,16 +114,17 @@ def render_gemini_view():
     onpage_data = st.session_state.get("active_onpage_audit", {})
     
     with tab_plan:
-        st.markdown("""
-        <div style="font-size:12px;color:#A0A0A0;margin-bottom:12px;">
-            Synthesize all active On-Page DOM issues and Search Console findings into a structured, executive 30-day technical SEO action plan.
+        st.markdown(f"""
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
+            {t('ai_plan_desc')}
         </div>
         """, unsafe_allow_html=True)
         
         if not gsc_data and not onpage_data:
-            st.warning("Run an On-Page Audit or Search Console Analysis first to generate data for the action plan.")
+            warn = "قم بإجراء فحص داخلي أو تحليل سيرش كونسول أولاً لتغذية خطة العمل بالبيانات." if is_ar else "Run an On-Page Audit or Search Console Analysis first to generate data for the action plan."
+            st.warning(warn)
         else:
-            if st.button("Generate Executive 30-Day Plan", type="primary"):
+            if st.button(t("ai_generate_plan"), type="primary"):
                 with st.spinner("Consulting Google Gemini AI for technical diagnosis..."):
                     summary = gsc_data.get("summary", {}) if gsc_data else {"target_url": onpage_data.get("target_url")}
                     top_issues = gsc_data.get("issues", []) if gsc_data else [{"issue": d} for d in onpage_data.get("pages", [{}])[0].get("deductions", [])]
@@ -113,48 +134,49 @@ def render_gemini_view():
             saved_plan = st.session_state.get("gemini_saved_plan")
             if saved_plan:
                 st.markdown(f"""
-                <div class="glass-card" style="padding:24px;border-left:4px solid #D4AF37;">
+                <div class="glass-card" style="padding:24px;border-left:4px solid var(--gold);">
                     {saved_plan}
                 </div>
                 """, unsafe_allow_html=True)
                 
     with tab_rewriter:
-        st.markdown("#### High-Converting Title & Meta Description Generator")
+        st.markdown("#### High-Converting Title & Meta Description Generator" if not is_ar else "#### مولد عناوين وميتا ديسكريبشن جاذبة للزيارات")
         col_w1, col_w2 = st.columns(2)
         with col_w1:
-            q_in = st.text_input("Target Query", placeholder="e.g. technical seo audit checklist")
-            t_in = st.text_input("Current Title Tag", placeholder="e.g. SEO Audit Checklist - Example Site")
+            q_in = st.text_input("Target Query" if not is_ar else "الكلمة المفتاحية المستهدفة", placeholder="e.g. technical seo audit checklist")
+            t_in = st.text_input("Current Title Tag" if not is_ar else "عنوان الصفحة الحالي", placeholder="e.g. SEO Audit Checklist - Example Site")
         with col_w2:
-            m_in = st.text_area("Current Meta Description", placeholder="e.g. Read our seo audit checklist to improve your ranking.")
-            intent_in = st.selectbox("Search Intent", ["Commercial / Transactional", "Informational", "Comparison / Investigative"])
+            m_in = st.text_area("Current Meta Description" if not is_ar else "الوصف الحالي للصفحة", placeholder="e.g. Read our seo audit checklist to improve your ranking.")
+            intent_options = ["Commercial / Transactional", "Informational", "Comparison / Investigative"] if not is_ar else ["تجاري / شراء مباشر", "معلوماتي وإرشادي", "مقارنة وبحث تجاري"]
+            intent_in = st.selectbox("Search Intent" if not is_ar else "نية البحث", intent_options)
             
-        if st.button("Generate 3 High-CTR Options", type="primary", use_container_width=True):
+        if st.button(t("ai_generate_rewrites"), type="primary", use_container_width=True):
             if not q_in:
-                st.error("Please specify a target query.")
+                st.error("Please specify a target query." if not is_ar else "يرجى تحديد الكلمة المفتاحية.")
             else:
                 with st.spinner("Generating CTR-optimized variations..."):
                     rewrites = generate_title_meta_rewrites(active_key, q_in, t_in, m_in, intent_in)
                     st.markdown(f"""
-                    <div class="glass-card" style="padding:20px;border-left:3px solid #D4AF37;margin-top:16px;">
+                    <div class="glass-card" style="padding:20px;border-left:3px solid var(--gold);margin-top:16px;">
                         {rewrites}
                     </div>
                     """, unsafe_allow_html=True)
                     
     with tab_cannibal:
-        st.markdown("#### Intent Disambiguation & Cannibalization Brief")
-        c_query = st.text_input("Cannibalized Query", placeholder="e.g. best enterprise seo platform")
-        c_prim = st.text_input("Primary Target URL", placeholder="https://example.com/platform")
-        c_sec = st.text_area("Secondary Competing URLs (one per line)", placeholder="https://example.com/blog/best-seo-platforms\nhttps://example.com/pricing")
+        st.markdown("#### Intent Disambiguation & Cannibalization Brief" if not is_ar else "#### بريف فك التنازع بين صفحات الموقع")
+        c_query = st.text_input("Cannibalized Query" if not is_ar else "الكلمة المفتاحية المتنازع عليها", placeholder="e.g. best enterprise seo platform")
+        c_prim = st.text_input("Primary Target URL" if not is_ar else "الرابط الأساسي المستهدف بالترتيب", placeholder="https://example.com/platform")
+        c_sec = st.text_area("Secondary Competing URLs (one per line)" if not is_ar else "الروابط المنافسة الثانوية (رابط بكل سطر)", placeholder="https://example.com/blog/best-seo-platforms\nhttps://example.com/pricing")
         
-        if st.button("Generate Differentiation Brief", type="primary", use_container_width=True):
+        if st.button(t("ai_generate_brief"), type="primary", use_container_width=True):
             if not c_query or not c_prim:
-                st.error("Please provide both query and primary URL.")
+                st.error("Please provide both query and primary URL." if not is_ar else "يرجى توفير الكلمة المفتاحية والرابط الأساسي.")
             else:
                 sec_list = [s.strip() for s in c_sec.splitlines() if s.strip()]
                 with st.spinner("Formulating technical disambiguation protocol..."):
                     brief = generate_cannibalization_brief(active_key, c_query, c_prim, sec_list)
                     st.markdown(f"""
-                    <div class="glass-card" style="padding:20px;border-left:3px solid #D4AF37;margin-top:16px;">
+                    <div class="glass-card" style="padding:20px;border-left:3px solid var(--gold);margin-top:16px;">
                         {brief}
                     </div>
                     """, unsafe_allow_html=True)

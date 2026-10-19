@@ -9,6 +9,16 @@ An enterprise-grade Technical SEO and Search Console analytics platform architec
 
 ---
 
+## What's New in Version 2.2
+
+- **Dynamic Light & Dark Mode:** Instant toggle between luxury obsidian black and crisp executive light mode with gold accents and custom Plotly figure theme alignment.
+- **Full Bilingual Support (English & Arabic):** Complete UI localization with automatic Right-to-Left (RTL) formatting and Google `Cairo` font typography.
+- **Dedicated GSC Upload Zone:** Prominent drag-and-drop file ingestion supporting `.zip` archives directly exported from Google Search Console (automatically unpacks `Queries.csv`, `Pages.csv`, `Devices.csv`), standalone `.csv` files, and `.json` API payloads.
+- **Official Brand & Google Badges:** Embedded official Google 4-color SVG logo, Google Search Console badge, and Gemini sparkle icons.
+- **Eye-Friendly Animations:** Subtle CSS fade-in, smooth card elevation, and gold glow transitions respecting `prefers-reduced-motion`.
+
+---
+
 ## Key Modules & Capabilities
 
 ### 1. On-Page & Technical DOM Audit
@@ -21,7 +31,7 @@ An enterprise-grade Technical SEO and Search Console analytics platform architec
 - **Server & Robots.txt:** Deep inspection of `robots.txt` disallows, sitemaps, crawl-delay, TTFB latency, and security headers (HTTPS, HSTS, X-Frame-Options, CSP, X-Content-Type-Options, Cache-Control).
 
 ### 2. Search Console Intelligence (Python + R Dual Engine)
-- **Flexible Data Ingestion:** Direct support for Google Search Console API JSON responses (`rows[]` with `keys`, `clicks`, `impressions`, `ctr`, `position`) and official multi-tab CSV exports.
+- **Dedicated Upload Zone:** Drag-and-drop support for `.zip` (direct GSC exports), `.csv`, and `.json`.
 - **Semantic Intent Clustering (Python / Scikit-Learn):** TF-IDF vectorization and KMeans / Cosine clustering to group queries and landing pages into distinct search intent clusters.
 - **10-Class Automated Issue Detection:**
   1. *Low CTR with High Impressions* (Snippet re-optimization opportunities).
@@ -67,8 +77,9 @@ An enterprise-grade Technical SEO and Search Console analytics platform architec
 
 The platform strictly adheres to an executive, distraction-free aesthetic:
 - **Palette:** Gold (`#D4AF37`, hover `#B8962E`), Deep Black (`#0B0B0B`, surfaces `#141414`, `#1C1C1C`), and Soft White (`#FFFFFF`, `#F5F5F5`).
-- **Warm Gold Overlay:** Subtle transparent radial gradient overlay (`rgba(212, 175, 55, 0.08)`) over the dark backdrop.
-- **Strict Anti-Emoji Policy:** Zero emojis, decorative icons, or icon fonts across the UI. Replaced by refined typography (Inter / Poppins) and uppercase text badges (`[OPTIMAL]`, `[WARNING]`, `[CRITICAL]`).
+- **Dynamic Light & Dark Themes:** Light theme utilizes clean surfaces with refined gold accents.
+- **Bilingual RTL Support:** Native Arabic typography utilizing Google Fonts `Cairo` with automatic right-to-left layout alignments.
+- **Strict Anti-Emoji Policy:** Zero emojis, decorative icons, or icon fonts across the UI. Replaced by refined typography (Inter / Poppins / Cairo) and uppercase text badges (`[OPTIMAL]`, `[WARNING]`, `[CRITICAL]`).
 - **Smooth Animations:** Subtle page fade-in and gentle card hover lifts respecting `prefers-reduced-motion`.
 
 ---
@@ -77,15 +88,16 @@ The platform strictly adheres to an executive, distraction-free aesthetic:
 
 ```
 seo-suite-pro/
-├── app.py                      # Master application entry point and routing gateway
+├── app.py                      # Master application entry point, routing gateway & theme/lang controllers
 ├── requirements.txt            # Pinned production Python dependencies
 ├── packages.txt                # Linux system dependencies for Streamlit Cloud (R runtime)
 ├── .gitignore                  # Exclusion rules for databases, secrets, and caches
 ├── assets/
 │   ├── logo.jpeg               # Official brand logo
-│   └── custom.css              # Gold and black design system stylesheet
+│   └── custom.css              # Gold, black, white design system & theme/RTL stylesheet
 ├── core/
 │   ├── config.py               # Constants, design tokens, and crawling limits
+│   ├── i18n.py                 # Bilingual translation dictionary (English & Arabic)
 │   ├── security.py             # SSRF prevention, URL sanitization, and Fernet encryption
 │   ├── database.py             # SQLite persistence, bcrypt auth, and admin metrics
 │   └── auth.py                 # Streamlit session management and role gates
@@ -94,7 +106,7 @@ seo-suite-pro/
 │   ├── onpage_analyzer.py      # BeautifulSoup/lxml DOM parser and readability scorer
 │   ├── offpage_analyzer.py     # Anchor text categorization and over-optimization model
 │   ├── technical_checker.py    # Robots.txt validation and server security header audit
-│   ├── gsc_processor.py        # GSC ingestion, TF-IDF clustering, and cannibalization solver
+│   ├── gsc_processor.py        # GSC ingestion (ZIP, CSV, JSON), TF-IDF clustering & cannibalization solver
 │   ├── r_statistical_runner.py # Rscript execution bridge with seamless Scipy fallback
 │   └── gemini_service.py       # Google Gemini AI client
 ├── r_scripts/
@@ -104,11 +116,11 @@ seo-suite-pro/
 │   ├── export_excel.py         # OpenPyXL styled multi-sheet workbook generator
 │   └── export_pdf.py           # ReportLab branded PDF generator
 ├── views/
-│   ├── components.py           # Header, footer, KPI cards, and custom Plotly theme
+│   ├── components.py           # Header, footer, Google/GSC/Gemini SVG badges, and theme Plotly styles
 │   ├── view_auth.py            # User sign in and registration portal
 │   ├── view_dashboard.py       # Executive overview and module launchpad
 │   ├── view_onpage.py          # On-page DOM and technical crawler view
-│   ├── view_gsc.py             # Search Console Python + R intelligence view
+│   ├── view_gsc.py             # Search Console Python + R intelligence view with dedicated upload zone
 │   ├── view_offpage.py         # Backlink profile and anchor risk view
 │   ├── view_gemini.py          # Gemini AI action plan and snippet assistant
 │   ├── view_history.py         # Private user audit vault view
@@ -117,7 +129,7 @@ seo-suite-pro/
 └── tests/
     ├── test_security.py        # SSRF and encryption unit tests
     ├── test_parsers.py         # On-page DOM and schema unit tests
-    ├── test_gsc.py             # Cannibalization and TF-IDF clustering tests
+    ├── test_gsc.py             # Cannibalization, ZIP extraction & i18n unit tests
     └── test_auth_db.py         # Authentication and data isolation tests
 ```
 

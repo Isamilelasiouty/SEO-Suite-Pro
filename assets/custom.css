@@ -1,0 +1,289 @@
+/* ═══════════════════════════════════════════════════════════════
+   SEO Suite Pro — Luxury Gold, Black & White Design System
+   Architect: Ismail El Asiouty
+   STRICT: Zero emojis, pure typography, refined gold overlays
+   ═══════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --bg-primary: #0B0B0B;
+    --bg-surface: #141414;
+    --bg-elevated: #1C1C1C;
+    --gold: #D4AF37;
+    --gold-hover: #B8962E;
+    --gold-glow: rgba(212, 175, 55, 0.35);
+    --gold-tint: rgba(212, 175, 55, 0.08);
+    --gold-border: rgba(212, 175, 55, 0.25);
+    --text-white: #FFFFFF;
+    --text-soft: #F5F5F5;
+    --text-muted: #A0A0A0;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+}
+
+/* Global resets & typography */
+html, body, [class*="css"], .stApp {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    background-color: var(--bg-primary) !important;
+    color: var(--text-soft) !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', sans-serif !important;
+    color: var(--text-white) !important;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+}
+
+/* Main background with warm transparent gold gradient overlay */
+.stApp {
+    background: radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.12) 0%, rgba(11, 11, 11, 0.98) 75%), #0B0B0B !important;
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* Sidebar styling */
+section[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #0B0B0B 0%, #141414 100%) !important;
+    border-right: 1px solid var(--gold-border) !important;
+}
+
+section[data-testid="stSidebar"] .block-container {
+    padding-top: 2rem;
+}
+
+section[data-testid="stSidebar"] * {
+    color: var(--text-soft) !important;
+}
+
+/* Cards & Surfaces */
+.metric-card, .glass-card {
+    background: linear-gradient(145deg, rgba(20, 20, 20, 0.9) 0%, rgba(28, 28, 28, 0.9) 100%);
+    border: 1px solid var(--gold-border);
+    border-radius: var(--radius-md);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.metric-card::before, .glass-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(180deg, rgba(212, 175, 55, 0.05) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+.metric-card:hover, .glass-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--gold);
+    box-shadow: 0 8px 30px rgba(212, 175, 55, 0.15);
+}
+
+.card-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.card-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--gold);
+    line-height: 1.1;
+    font-family: 'Poppins', sans-serif;
+}
+
+.card-subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 6px;
+}
+
+/* Custom Text Badges (Replacing Emojis) */
+.badge-label {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 1px solid transparent;
+}
+
+.badge-optimal {
+    background: rgba(212, 175, 55, 0.12);
+    color: var(--gold);
+    border-color: var(--gold);
+}
+
+.badge-warning {
+    background: rgba(245, 124, 0, 0.12);
+    color: #FFA726;
+    border-color: rgba(245, 124, 0, 0.4);
+}
+
+.badge-critical {
+    background: rgba(229, 57, 53, 0.12);
+    color: #EF5350;
+    border-color: rgba(229, 57, 53, 0.4);
+}
+
+.badge-neutral {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-soft);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Section Dividers */
+.section-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(90deg, #141414 0%, #1C1C1C 100%);
+    border-left: 3px solid var(--gold);
+    border-top: 1px solid var(--gold-border);
+    border-right: 1px solid var(--gold-border);
+    border-bottom: 1px solid var(--gold-border);
+    padding: 14px 20px;
+    border-radius: var(--radius-sm);
+    margin: 24px 0 16px;
+}
+
+.section-banner-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--gold);
+}
+
+/* Buttons */
+.stButton > button {
+    background: #141414 !important;
+    color: var(--gold) !important;
+    border: 1px solid var(--gold) !important;
+    border-radius: var(--radius-sm) !important;
+    padding: 8px 20px !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    letter-spacing: 0.03em !important;
+    transition: all 0.25s ease !important;
+}
+
+.stButton > button:hover {
+    background: var(--gold) !important;
+    color: #000000 !important;
+    box-shadow: 0 0 16px var(--gold-glow) !important;
+}
+
+.stButton > button[kind="primary"] {
+    background: var(--gold) !important;
+    color: #000000 !important;
+    border: 1px solid var(--gold) !important;
+    font-weight: 700 !important;
+}
+
+.stButton > button[kind="primary"]:hover {
+    background: var(--gold-hover) !important;
+    border-color: var(--gold-hover) !important;
+    box-shadow: 0 0 20px var(--gold-glow) !important;
+}
+
+/* Input Fields */
+.stTextInput > div > div > input,
+.stNumberInput > div > div > input,
+.stSelectbox > div > div {
+    background-color: #141414 !important;
+    border: 1px solid var(--gold-border) !important;
+    border-radius: var(--radius-sm) !important;
+    color: var(--text-white) !important;
+    font-size: 13px !important;
+}
+
+.stTextInput > div > div > input:focus,
+.stNumberInput > div > div > input:focus {
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.2) !important;
+}
+
+/* Tabs */
+.stTabs [data-baseweb="tab-list"] {
+    background-color: #141414 !important;
+    border: 1px solid var(--gold-border) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 4px !important;
+    gap: 4px !important;
+}
+
+.stTabs [data-baseweb="tab"] {
+    background: transparent !important;
+    color: var(--text-muted) !important;
+    border-radius: var(--radius-sm) !important;
+    padding: 8px 18px !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    transition: all 0.2s ease !important;
+}
+
+.stTabs [aria-selected="true"] {
+    background: #1C1C1C !important;
+    color: var(--gold) !important;
+    border: 1px solid var(--gold-border) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Tables / DataFrames */
+.stDataFrame {
+    border: 1px solid var(--gold-border) !important;
+    border-radius: var(--radius-md) !important;
+    overflow: hidden !important;
+}
+
+/* Progress bar in gold */
+.stProgress > div > div > div > div {
+    background: linear-gradient(90deg, #B8962E 0%, #D4AF37 100%) !important;
+    border-radius: 4px !important;
+}
+
+/* Universal Footer */
+.app-footer {
+    text-align: center;
+    padding: 30px 10px 20px;
+    margin-top: 40px;
+    border-top: 1px solid var(--gold-border);
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.app-footer a {
+    color: var(--gold) !important;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.app-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, .metric-card, .glass-card, .stApp {
+        animation: none !important;
+        transition: none !important;
+    }
+}
